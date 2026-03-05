@@ -68,11 +68,13 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
   const updateStatus = useUpdateBusinessStatus()
   const updateNotes = useUpdateBusinessNotes()
   const [convertDialogOpen, setConvertDialogOpen] = useState(false)
+  const [localStatus, setLocalStatus] = useState<Business['contact_status'] | null>(business?.contact_status ?? null)
   const [localNotes, setLocalNotes] = useState(business?.notes ?? '')
   const [saveIndicator, setSaveIndicator] = useState<'idle' | 'saving' | 'saved'>('idle')
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    setLocalStatus(business?.contact_status ?? null)
     setLocalNotes(business?.notes ?? '')
     setSaveIndicator('idle')
   }, [business?.id])
@@ -100,6 +102,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
     if (v === 'CLOSED-WON') {
       setConvertDialogOpen(true)
     } else {
+      setLocalStatus(v)
       updateStatus.mutate({ id: business.id, contact_status: v })
     }
   }
@@ -129,9 +132,9 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                 {/* Status */}
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground">Status:</span>
-                  <StatusBadge status={business.contact_status} />
+                  <StatusBadge status={localStatus ?? business.contact_status} />
                   <Select
-                    value={business.contact_status}
+                    value={localStatus ?? business.contact_status}
                     onValueChange={(v) => handleStatusChange(v as Business['contact_status'])}
                   >
                     <SelectTrigger size="sm" className="h-7 w-[110px]">
