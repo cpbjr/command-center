@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Sheet,
   SheetContent,
@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { StatusBadge } from './StatusBadge'
 import { ScoreBadge } from './ScoreBadge'
 import { ConvertToClientDialog } from './ConvertToClientDialog'
-import { type Business, useBusinessAudit, useUpdateBusinessStatus } from '@/hooks/use-businesses'
+import { type Business, useBusinessAudit, useUpdateBusinessStatus, useUpdateBusinessNotes } from '@/hooks/use-businesses'
 import { AuditTriggerButton } from './AuditTriggerButton'
 import { ContactList } from '@/components/contacts/ContactList'
 import { LeadTaskList } from '@/components/tasks/LeadTaskList'
@@ -66,7 +66,34 @@ function BooleanFlag({ value, label }: { value: boolean | null; label: string })
 export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
   const { data: audit } = useBusinessAudit(business?.id ?? null)
   const updateStatus = useUpdateBusinessStatus()
+  const updateNotes = useUpdateBusinessNotes()
   const [convertDialogOpen, setConvertDialogOpen] = useState(false)
+  const [localNotes, setLocalNotes] = useState(business?.notes ?? '')
+  const [saveIndicator, setSaveIndicator] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    setLocalNotes(business?.notes ?? '')
+    setSaveIndicator('idle')
+  }, [business?.id])
+
+  const handleNotesBlur = useCallback(() => {
+    if (!business) return
+    if (localNotes === (business.notes ?? '')) return
+
+    setSaveIndicator('saving')
+    updateNotes.mutate(
+      { id: business.id, notes: localNotes },
+      {
+        onSuccess: () => {
+          setSaveIndicator('saved')
+          if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+          saveTimerRef.current = setTimeout(() => setSaveIndicator('idle'), 2000)
+        },
+        onError: () => setSaveIndicator('idle'),
+      }
+    )
+  }, [business, localNotes, updateNotes])
 
   function handleStatusChange(v: Business['contact_status']) {
     if (!business) return
@@ -119,6 +146,28 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Notes */}
+                <section className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Notes
+                    </h3>
+                    {saveIndicator === 'saving' && (
+                      <span className="text-xs text-muted-foreground animate-pulse">Saving...</span>
+                    )}
+                    {saveIndicator === 'saved' && (
+                      <span className="text-xs text-green-600">Saved</span>
+                    )}
+                  </div>
+                  <textarea
+                    className="w-full min-h-[80px] resize-y rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                    placeholder="Add notes about this business..."
+                    value={localNotes}
+                    onChange={(e) => setLocalNotes(e.target.value)}
+                    onBlur={handleNotesBlur}
+                  />
+                </section>
 
                 {/* Contact info */}
                 <section className="space-y-2">

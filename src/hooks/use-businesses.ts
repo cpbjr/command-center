@@ -18,6 +18,7 @@ export interface Business {
   rating: number | null
   user_rating_count: number | null
   latest_score: number | null
+  notes: string
 }
 
 export interface BusinessAudit {
@@ -162,6 +163,27 @@ export function useUpdateBusinessStatus() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['businesses'] })
+    },
+  })
+}
+
+export function useUpdateBusinessNotes() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      const { error } = await supabase
+        .from('businesses')
+        .update({ notes })
+        .eq('id', id)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['businesses'] })
+      queryClient.invalidateQueries({ queryKey: ['discovery'] })
+      queryClient.invalidateQueries({ queryKey: ['discovery-recent'] })
+      queryClient.invalidateQueries({ queryKey: ['discovery-search'] })
     },
   })
 }
