@@ -5,6 +5,6 @@ project_id = "klyzdnocgrvassppripi"
 
 [api]
 enabled = true
-schemas = ["public", "storage", "graphql_public"]
-extra_search_path = ["public", "extensions"]
+schemas = ["public", "wpa", "graphql_public", "turfsheet", "crm", "taskboard"]
+extra_search_path = ["public", "wpa", "extensions"]
 max_rows = 1000

@@ -21,20 +21,20 @@ export function useDiscoveryStats() {
     queryFn: async () => {
       // Total businesses
       const { count: totalDiscovered, error: e1 } = await supabase
-        .from('businesses')
+        .from('wpa_businesses')
         .select('*', { count: 'exact', head: true })
       if (e1) throw e1
 
       // Total with at least one audit
       const { count: totalAudited, error: e2 } = await supabase
-        .from('businesses_with_score')
+        .from('wpa_businesses_with_score')
         .select('*', { count: 'exact', head: true })
         .not('last_audited_at', 'is', null)
       if (e2) throw e2
 
       // Avg score across audited businesses
       const { data: scoreData, error: e3 } = await supabase
-        .from('businesses_with_score')
+        .from('wpa_businesses_with_score')
         .select('latest_score')
         .not('latest_score', 'is', null)
       if (e3) throw e3
@@ -47,7 +47,7 @@ export function useDiscoveryStats() {
 
       // New (uncontacted) count
       const { count: newCount, error: e4 } = await supabase
-        .from('businesses')
+        .from('wpa_businesses')
         .select('*', { count: 'exact', head: true })
         .eq('contact_status', 'NEW')
       if (e4) throw e4
@@ -68,7 +68,7 @@ export function useRecentDiscoveries(limit: number) {
     queryKey: ['discovery-recent', limit],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('businesses_with_score')
+        .from('wpa_businesses_with_score')
         .select('*')
         .order('discovered_at', { ascending: false })
         .limit(limit)
@@ -86,7 +86,7 @@ export function useDiscoverySearch(query: string) {
     queryKey: ['discovery-search', trimmed],
     queryFn: async () => {
       let q = supabase
-        .from('businesses_with_score')
+        .from('wpa_businesses_with_score')
         .select('*')
         .limit(50)
 

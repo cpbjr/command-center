@@ -25,7 +25,7 @@ export interface Task {
   tags: string[]
   notes: string | null
   wpa_clients: { name: string } | null
-  businesses: { name: string } | null
+  wpa_businesses: { name: string } | null
 }
 
 export type TaskInsert = {
@@ -59,7 +59,7 @@ export function useTasks(categoryFilter?: string, clientId?: number, businessId?
     queryFn: async () => {
       let query = supabase
         .from('wpa_tasks')
-        .select('*, wpa_clients(name), businesses(name)')
+        .select('*, wpa_clients(name), wpa_businesses(name)')
 
       if (categoryFilter) {
         query = query.eq('category', categoryFilter)
@@ -96,7 +96,7 @@ export function useCreateTask() {
       const { data, error } = await supabase
         .from('wpa_tasks')
         .insert(task)
-        .select('*, wpa_clients(name), businesses(name)')
+        .select('*, wpa_clients(name), wpa_businesses(name)')
         .single()
 
       if (error) throw error
@@ -126,7 +126,7 @@ export function useUpdateTask() {
         .from('wpa_tasks')
         .update(payload)
         .eq('id', id)
-        .select('*, wpa_clients(name), businesses(name)')
+        .select('*, wpa_clients(name), wpa_businesses(name)')
         .single()
 
       if (error) throw error
@@ -181,7 +181,7 @@ export function useTemplateTasks() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_tasks')
-        .select('*, wpa_clients(name), businesses(name)')
+        .select('*, wpa_clients(name), wpa_businesses(name)')
         .eq('is_template', true)
         .order('created_at', { ascending: false })
 
@@ -198,7 +198,7 @@ export function useGenerateFromTemplates() {
     mutationFn: async () => {
       const { data: templates, error: fetchError } = await supabase
         .from('wpa_tasks')
-        .select('*, wpa_clients(name), businesses(name)')
+        .select('*, wpa_clients(name), wpa_businesses(name)')
         .eq('is_template', true)
         .not('recurrence_rule', 'is', null)
 

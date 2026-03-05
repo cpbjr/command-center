@@ -184,7 +184,7 @@ export function useProjectTasks(projectId: number | null) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_tasks')
-        .select('*, wpa_clients(name), businesses(name)')
+        .select('*, wpa_clients(name), wpa_businesses(name)')
         .eq('project_id', projectId!)
         .eq('is_template', false)
         .order('created_at', { ascending: false })

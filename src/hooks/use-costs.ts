@@ -56,7 +56,7 @@ export function useCosts() {
     queryKey: ['costs', ninetyDaysAgoStr],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('daily_costs')
+        .from('wpa_daily_costs')
         .select('*')
         .gte('date', ninetyDaysAgoStr)
         .order('date', { ascending: false })
