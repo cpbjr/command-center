@@ -57,7 +57,7 @@ export function useBusinesses(options: UseBusinessesOptions) {
     queryKey: ['businesses', options],
     queryFn: async () => {
       let query = supabase
-        .from('businesses_with_score')
+        .from('wpa_businesses_with_score')
         .select('*', { count: 'exact' })
         .order('latest_score', { ascending: false, nullsFirst: false })
         .range(from, to)
@@ -106,7 +106,7 @@ export function useBusinessCategories() {
     queryKey: ['business-categories'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('businesses_with_score')
+        .from('wpa_businesses_with_score')
         .select('search_query')
         .not('search_query', 'is', null)
 
@@ -129,7 +129,7 @@ export function useBusinessAudit(businessId: string | null) {
       if (!businessId) return null
 
       const { data, error } = await supabase
-        .from('audits')
+        .from('wpa_audits')
         .select('*')
         .eq('business_id', businessId)
         .order('audited_at', { ascending: false })
@@ -155,7 +155,7 @@ export function useUpdateBusinessStatus() {
       contact_status: Business['contact_status']
     }) => {
       const { error } = await supabase
-        .from('businesses')
+        .from('wpa_businesses')
         .update({ contact_status })
         .eq('id', id)
 
@@ -173,7 +173,7 @@ export function useUpdateBusinessNotes() {
   return useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
       const { error } = await supabase
-        .from('businesses')
+        .from('wpa_businesses')
         .update({ notes })
         .eq('id', id)
 
@@ -195,7 +195,7 @@ export function useRequestAudit() {
     mutationFn: async (businessId: string) => {
       const timestamp = new Date().toISOString()
       const { error } = await supabase
-        .from('audits')
+        .from('wpa_audits')
         .insert({
           business_id: businessId,
           score: null,
@@ -226,7 +226,7 @@ export function useConvertToClient() {
     }) => {
       // First update business status to CLOSED-WON
       const { error: bizError } = await supabase
-        .from('businesses')
+        .from('wpa_businesses')
         .update({ contact_status: 'CLOSED-WON' })
         .eq('id', business.id)
       if (bizError) throw bizError

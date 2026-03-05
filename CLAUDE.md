@@ -6,6 +6,13 @@ White Pine Agency internal operations dashboard.
 
 **Read `.agent/README.md` first** for full project context.
 
+Be proactive. If the next step is obvious, do not stop to ask if it should be done. 
+
+Add to .agent/Knowledge/ insights about how Christopher works and how the site functions. Your job is to maximize time spent on the projet by understanding it and how it is used. 
+
+When planning, always consider what "best practices" are. Those should be your guiding principle. 
+
+When creating plans always save a copy to .agent/Tasks/Implementation/. When work has been completed, document the work done and move the plan to .agent/Tasks/completed/. 
 ---
 
 ## Supabase
