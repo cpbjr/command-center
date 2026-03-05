@@ -1,0 +1,10 @@
+# Supabase config for Command Center
+# Project ref: klyzdnocgrvassppripi
+
+project_id = "klyzdnocgrvassppripi"
+
+[api]
+enabled = true
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
