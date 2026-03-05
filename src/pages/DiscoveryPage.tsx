@@ -80,6 +80,12 @@ export default function DiscoveryPage() {
     : (recent ?? [])
   const isLoading = isSearching ? searchLoading : recentLoading
 
+  useEffect(() => {
+    if (!selectedBusiness) return
+    const fresh = businesses.find((b) => b.id === selectedBusiness.id)
+    if (fresh) setSelectedBusiness(fresh as Business)
+  }, [businesses])
+
   function handleRowClick(biz: DiscoveryBusiness) {
     setSelectedBusiness(biz as Business)
     setDetailOpen(true)

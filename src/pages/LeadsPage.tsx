@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LeadFilters } from '@/components/leads/LeadFilters'
 import { LeadTable } from '@/components/leads/LeadTable'
 import { LeadCard } from '@/components/leads/LeadCard'
@@ -30,6 +30,12 @@ export default function LeadsPage() {
 
   const businesses = data?.data ?? []
   const total = data?.count ?? 0
+
+  useEffect(() => {
+    if (!selectedBusiness) return
+    const fresh = businesses.find((b) => b.id === selectedBusiness.id)
+    if (fresh) setSelectedBusiness(fresh)
+  }, [businesses])
 
   function handleSearchChange(v: string) {
     setSearch(v)
