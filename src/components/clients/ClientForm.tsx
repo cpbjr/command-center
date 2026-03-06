@@ -28,6 +28,7 @@ import { ContactList } from '@/components/contacts/ContactList'
 import { ClientTaskList } from '@/components/tasks/ClientTaskList'
 import { CommLogWidget } from '@/components/clients/CommLogWidget'
 import { GbpScoreWidget } from '@/components/clients/GbpScoreWidget'
+import { GbpInsightsWidget } from '@/components/clients/GbpInsightsWidget'
 import { BaselineWidget } from '@/components/clients/BaselineWidget'
 import { DocumentList } from '@/components/clients/DocumentList'
 
@@ -272,6 +273,7 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                 </TabsContent>
                 <TabsContent value="gbp" className="pt-4 space-y-6">
                   <GbpScoreWidget clientId={client.id} />
+                  <GbpInsightsWidget clientId={client.id} />
                   <BaselineWidget clientId={client.id} />
                 </TabsContent>
                 <TabsContent value="docs" className="pt-4">
