@@ -266,7 +266,7 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   <ContactList clientId={client.id} />
                 </TabsContent>
                 <TabsContent value="tasks" className="pt-4">
-                  <ClientTaskList clientId={client.id} />
+                  <ClientTaskList clientId={client.id} businessId={client.business_id} />
                 </TabsContent>
                 <TabsContent value="activity" className="pt-4">
                   <CommLogWidget clientId={client.id} />

@@ -10,6 +10,7 @@ export interface Client {
   address: string
   phone: string
   website_url: string
+  business_id: string | null
   service_tier: ServiceTier
   monthly_revenue: number
   current_phase: string
@@ -21,7 +22,7 @@ export interface Client {
   updated_at: string
 }
 
-export type ClientInsert = Omit<Client, 'id' | 'created_at' | 'updated_at'>
+export type ClientInsert = Omit<Client, 'id' | 'created_at' | 'updated_at' | 'business_id'> & { business_id?: string | null }
 export type ClientUpdate = Partial<ClientInsert> & { id: number }
 
 export function useClients() {

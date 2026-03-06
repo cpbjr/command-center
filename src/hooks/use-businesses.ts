@@ -212,6 +212,22 @@ export function useRequestAudit() {
   })
 }
 
+export function useBusinessesSimple() {
+  return useQuery<{ id: string; name: string }[]>({
+    queryKey: ['businesses-simple'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('wpa_businesses')
+        .select('id, name')
+        .order('name', { ascending: true })
+
+      if (error) throw error
+      return (data ?? []) as { id: string; name: string }[]
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
 export function useConvertToClient() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -231,7 +247,7 @@ export function useConvertToClient() {
         .eq('id', business.id)
       if (bizError) throw bizError
 
-      // Then create the client
+      // Then create the client, linking back to the business record
       const { data, error } = await supabase
         .from('wpa_clients')
         .insert({
@@ -239,6 +255,7 @@ export function useConvertToClient() {
           address: business.address ?? '',
           phone: business.phone ?? '',
           website_url: business.website_url ?? '',
+          business_id: business.id,
           service_tier,
           status: 'active',
           start_date: new Date().toISOString().split('T')[0],
@@ -253,6 +270,7 @@ export function useConvertToClient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['businesses'] })
       queryClient.invalidateQueries({ queryKey: ['clients'] })
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
     },
   })
 }
