@@ -19,6 +19,7 @@ import {
 import { useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/use-tasks'
 import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/hooks/use-tasks'
 import { useClients } from '@/hooks/use-clients'
+import { useBusinessesSimple } from '@/hooks/use-businesses'
 import { Badge } from '@/components/ui/badge'
 import { XIcon } from 'lucide-react'
 
@@ -85,6 +86,7 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
   const { data: clients = [] } = useClients()
+  const { data: businesses = [] } = useBusinessesSimple()
 
   const isEditing = !!task
 
@@ -242,7 +244,11 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
               <label className="text-sm font-medium">Client</label>
               <Select
                 value={form.client_id}
-                onValueChange={(v) => set('client_id', v === 'none' ? '' : v)}
+                onValueChange={(v) => {
+                  const val = v === 'none' ? '' : v
+                  set('client_id', val)
+                  if (val) set('business_id', '')
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="None" />
@@ -255,6 +261,28 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid gap-1.5">
+            <label className="text-sm font-medium">Lead</label>
+            <Select
+              value={form.business_id}
+              onValueChange={(v) => {
+                const val = v === 'none' ? '' : v
+                set('business_id', val)
+                if (val) set('client_id', '')
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="None" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {businesses.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid gap-1.5">

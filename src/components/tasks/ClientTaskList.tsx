@@ -7,10 +7,17 @@ import { TaskForm } from './TaskForm'
 
 interface ClientTaskListProps {
   clientId: number
+  businessId?: string | null
 }
 
-export function ClientTaskList({ clientId }: ClientTaskListProps) {
-  const { data: tasks = [], isLoading } = useTasks(undefined, clientId)
+export function ClientTaskList({ clientId, businessId }: ClientTaskListProps) {
+  // If the client has a linked business, fetch tasks by business_id
+  // Otherwise fall back to client_id for legacy clients
+  const { data: tasks = [], isLoading } = useTasks(
+    undefined,
+    businessId ? undefined : clientId,
+    businessId || undefined,
+  )
   const [formOpen, setFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
 
@@ -54,6 +61,7 @@ export function ClientTaskList({ clientId }: ClientTaskListProps) {
         onOpenChange={setFormOpen}
         task={editingTask}
         defaultClientId={clientId}
+        defaultBusinessId={businessId || undefined}
       />
     </div>
   )
