@@ -26,14 +26,16 @@ const bottomNav = [
 
 interface SidebarProps {
   collapsed?: boolean
+  className?: string
 }
 
-export default function Sidebar({ collapsed = false }: SidebarProps) {
+export default function Sidebar({ collapsed = false, className }: SidebarProps) {
   return (
     <aside
       className={cn(
         "flex h-full flex-col bg-gradient-to-b from-pine-deep to-pine-forest transition-all duration-200",
-        collapsed ? "w-16" : "w-60"
+        collapsed ? "w-16" : "w-60",
+        className
       )}
     >
       {/* Logo area */}

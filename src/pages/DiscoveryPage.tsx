@@ -97,7 +97,6 @@ export default function DiscoveryPage() {
       <div className="flex items-center gap-3">
         <TelescopeIcon className="size-6 text-pine-deep shrink-0" />
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Discovery</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Businesses Bud discovered and audited overnight
           </p>

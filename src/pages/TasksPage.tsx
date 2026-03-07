@@ -34,16 +34,15 @@ export default function TasksPage() {
 
   return (
     <div className="flex flex-col gap-4 p-4 sm:p-6">
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-baseline justify-between mb-2">
         <div className="flex items-baseline gap-5">
-          <h2 className="text-3xl font-semibold tracking-tight text-text-primary">Tasks</h2>
           <div className="flex gap-4">
             <button
               onClick={() => setView('board')}
               className={cn(
-                'text-sm pb-0.5 transition-colors',
+                'text-sm pb-1 transition-colors',
                 view === 'board'
-                  ? 'text-pine-mid font-medium border-b border-pine-mid'
+                  ? 'text-pine-mid font-semibold border-b-2 border-pine-mid'
                   : 'text-text-tertiary hover:text-text-secondary'
               )}
             >

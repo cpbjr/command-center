@@ -74,11 +74,11 @@ export function TaskBoard({ tasks, onAdd, onEdit }: TaskBoardProps) {
       </div>
 
       {/* Mobile: Tabs */}
-      <div className="sm:hidden flex-1">
-        <Tabs defaultValue="todo">
-          <TabsList className="w-full grid grid-cols-4 h-auto">
+      <div className="sm:hidden flex-1 min-w-0 overflow-hidden w-full">
+        <Tabs defaultValue="todo" className="w-full">
+          <TabsList className="w-full flex overflow-x-auto scrollbar-hide h-auto justify-start p-1 touch-pan-x">
             {COLUMNS.map(({ status, label }) => (
-              <TabsTrigger key={status} value={status} className="text-xs px-1">
+              <TabsTrigger key={status} value={status} className="text-xs px-2.5 py-1.5 whitespace-nowrap shrink-0">
                 {label}
                 <span className="ml-1 opacity-60 text-[10px]">
                   ({tasksForStatus(status).length})

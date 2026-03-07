@@ -72,8 +72,7 @@ export default function LeadsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Lead Pipeline</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-sm text-text-secondary mt-0.5">
             {isLoading ? 'Loading...' : `${total.toLocaleString()} businesses`}
           </p>
         </div>

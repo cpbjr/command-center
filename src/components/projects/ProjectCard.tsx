@@ -72,7 +72,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
 
   return (
     <Card
-      className={`cursor-pointer transition-shadow hover:shadow-md ${overdue ? 'border-red-300' : ''}`}
+      className={`cursor-pointer ${overdue ? 'border-red-300' : ''}`}
       onClick={() => onClick(project)}
     >
       <CardHeader className="pb-2">

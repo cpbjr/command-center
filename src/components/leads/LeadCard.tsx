@@ -2,6 +2,7 @@ import { StatusBadge } from './StatusBadge'
 import { ScoreBadge } from './ScoreBadge'
 import { type Business } from '@/hooks/use-businesses'
 import { StarIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface LeadCardProps {
   business: Business
@@ -17,7 +18,7 @@ export function LeadCard({ business, onClick }: LeadCardProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent/50 active:bg-accent"
+      className="w-full bg-card p-4 text-left transition-all duration-300 active:bg-accent rounded-[var(--radius-lg)] border border-border-light hover:border-wpa-border hover:shadow-[0_4px_24px_rgba(26,51,40,0.04)] box-border overflow-hidden"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
@@ -30,9 +31,12 @@ export function LeadCard({ business, onClick }: LeadCardProps) {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <StatusBadge status={business.contact_status} />
+        <StatusBadge status={business.contact_status} className="shrink-0 scale-90 origin-top-left" />
         {business.rating != null && (
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+          <span className={cn(
+            'inline-flex items-center gap-1 text-xs text-muted-foreground',
+            'flex-1 text-sm truncate min-w-0'
+          )}>
             <StarIcon className="size-3 fill-amber-400 text-amber-400" />
             {business.rating.toFixed(1)}
             {business.user_rating_count != null && (

@@ -153,7 +153,7 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
   // ── Mobile row (< sm) ─────────────────────────────────────────────────────
   const mobileRow = (
     <div
-      className="sm:hidden flex items-stretch gap-2.5 py-2.5 px-2 border-b border-wpa-border/40 cursor-pointer active:bg-cream/70 transition-colors"
+      className="sm:hidden flex items-stretch gap-2.5 py-2.5 px-2 border-b border-wpa-border/40 cursor-pointer active:bg-cream/70 transition-colors min-w-0 w-full"
       onClick={() => onEdit?.(task)}
     >
       {/* Thin vertical priority strip */}
@@ -161,7 +161,7 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
 
       {/* Title */}
       <span className={cn(
-        'flex-1 text-sm truncate',
+        'flex-1 text-sm truncate min-w-0',
         task.status === 'done' && 'line-through text-text-tertiary',
         task.status === 'blocked' && 'text-bark',
         task.status !== 'done' && task.status !== 'blocked' && (PRIORITY_TITLE_STYLE[task.priority] ?? 'font-normal text-text-primary'),

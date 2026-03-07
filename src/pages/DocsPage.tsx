@@ -28,43 +28,47 @@ function TypeBadge({ type }: { type: DocumentType }) {
 function DocRow({ doc }: { doc: ReturnType<typeof useAllDocuments>['data'] extends (infer T)[] | undefined ? T : never }) {
   const href = doc.url ?? (doc.file_path ? `#${doc.file_path}` : undefined)
 
-  return (
-    <div className="flex items-start gap-3 px-4 py-3 hover:bg-surface-hover transition-colors group">
-      <div className="mt-0.5">
-        <TypeBadge type={doc.type} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-text-primary truncate">{doc.title}</span>
+  const inner = (
+    <div className="flex-1 min-w-0 flex flex-col gap-1">
+      <div className="flex items-start justify-between gap-3">
+        <span className="text-sm font-medium text-text-primary break-words whitespace-normal leading-snug pt-0.5">{doc.title}</span>
+        <div className="flex flex-col items-end shrink-0 gap-1.5 mt-0.5">
+          <span className="text-xs text-text-tertiary whitespace-nowrap">
+            {new Date(doc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </span>
           {href && (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-text-tertiary hover:text-pine-light"
-              title="Open"
-            >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </a>
+            <ChevronRight className="h-4 w-4 text-text-tertiary opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity mt-1" />
           )}
         </div>
-        <div className="flex items-center gap-3 mt-0.5">
-          {doc.client_name && (
-            <span className="text-xs text-text-tertiary">{doc.client_name}</span>
-          )}
-          {doc.notes && (
-            <span className="text-xs text-text-tertiary truncate max-w-sm">{doc.notes}</span>
-          )}
-        </div>
-        {doc.file_path && (
-          <span className="text-xs text-text-tertiary/60 font-mono truncate block mt-0.5">{doc.file_path}</span>
+      </div>
+      
+      <div className="flex flex-wrap items-center gap-3 mt-1">
+        <TypeBadge type={doc.type} />
+        {doc.client_name && (
+          <span className="text-[13px] font-medium text-text-secondary">{doc.client_name}</span>
         )}
       </div>
-      <span className="text-xs text-text-tertiary shrink-0 mt-0.5">
-        {new Date(doc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-      </span>
+
+      {doc.notes && (
+        <span className="text-xs text-text-tertiary line-clamp-2 max-w-sm mt-1">{doc.notes}</span>
+      )}
+      {doc.file_path && (
+        <span className="text-xs text-text-tertiary/60 font-mono break-all mt-1">{doc.file_path}</span>
+      )}
     </div>
   )
+
+  const className = "flex items-start gap-4 px-4 py-4 hover:bg-surface-hover transition-colors group cursor-pointer"
+
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+        {inner}
+      </a>
+    )
+  }
+
+  return <div className={className}>{inner}</div>
 }
 
 export default function DocsPage() {
@@ -79,25 +83,24 @@ export default function DocsPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-border-subtle">
-        <h1 className="text-xl font-serif font-bold text-text-primary">Docs</h1>
-        <p className="text-sm text-text-tertiary mt-0.5">Plans, notes, files, and links across all clients.</p>
+      <div className="px-6 py-3 border-b border-border-subtle">
+        <p className="text-sm text-text-tertiary">Plans, notes, files, and links across all clients.</p>
       </div>
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0">
         {/* Sidebar filter */}
-        <div className="w-44 shrink-0 border-r border-border-subtle py-4 px-3 flex flex-col gap-1">
+        <div className="w-full md:w-44 shrink-0 border-b md:border-b-0 md:border-r border-border-subtle py-3 px-4 md:py-4 md:px-3 flex flex-row md:flex-col overflow-x-auto md:overflow-visible gap-2 md:gap-1 scrollbar-hide">
           <button
             onClick={() => setActiveType(undefined)}
             className={cn(
-              'flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors w-full text-left',
+              'flex items-center justify-between px-3 h-9 md:h-auto md:py-2 rounded-[var(--radius-md)] text-sm transition-colors whitespace-nowrap min-w-fit md:w-full md:min-w-0 md:text-left gap-2',
               activeType === undefined
                 ? 'bg-pine-light/10 text-pine-light font-medium'
-                : 'text-text-secondary hover:bg-surface-hover'
+                : 'text-text-secondary hover:bg-surface-hover bg-muted/20 md:bg-transparent'
             )}
           >
             <span>All</span>
-            <span className="text-xs text-text-tertiary">{docs.length}</span>
+            <span className="text-xs text-text-tertiary ml-2 md:ml-0">{docs.length}</span>
           </button>
 
           {ALL_TYPES.map((type) => {
@@ -110,24 +113,24 @@ export default function DocsPage() {
                 key={type}
                 onClick={() => setActiveType(type)}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors w-full text-left gap-2',
+                  'flex items-center justify-between px-3 h-9 md:h-auto md:py-2 rounded-[var(--radius-md)] text-sm transition-colors whitespace-nowrap min-w-fit md:w-full md:min-w-0 md:text-left gap-2',
                   activeType === type
                     ? 'bg-pine-light/10 text-pine-light font-medium'
-                    : 'text-text-secondary hover:bg-surface-hover'
+                    : 'text-text-secondary hover:bg-surface-hover bg-muted/20 md:bg-transparent'
                 )}
               >
                 <span className="flex items-center gap-2">
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className="h-4 w-4 md:h-3.5 md:w-3.5 shrink-0" />
                   {meta.label}
                 </span>
-                <span className="text-xs text-text-tertiary">{count}</span>
+                <span className="text-xs text-text-tertiary ml-2 md:ml-0">{count}</span>
               </button>
             )
           })}
         </div>
 
         {/* Doc list */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto w-full">
           {isLoading ? (
             <div className="flex items-center justify-center py-24 text-text-tertiary text-sm">
               Loading…

@@ -49,13 +49,7 @@ export function LeadFilters({
 }: LeadFiltersProps) {
   const { data: categories = [] } = useBusinessCategories()
 
-  function toggleStatus(status: string) {
-    if (statusFilter.includes(status)) {
-      onStatusFilterChange(statusFilter.filter((s) => s !== status))
-    } else {
-      onStatusFilterChange([...statusFilter, status])
-    }
-  }
+
 
   function clearAll() {
     onSearchChange('')
@@ -74,10 +68,10 @@ export function LeadFilters({
     noWebsite
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="space-y-3 w-full">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center w-full">
         {/* Search */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 md:min-w-[200px]">
           <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <Input
             placeholder="Search by name or address..."
@@ -87,9 +81,27 @@ export function LeadFilters({
           />
         </div>
 
+        {/* Status */}
+        <Select 
+          value={statusFilter.length === 1 ? statusFilter[0] : '__all__'} 
+          onValueChange={(v) => onStatusFilterChange(v === '__all__' ? [] : [v])}
+        >
+          <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectValue placeholder="All statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All statuses</SelectItem>
+            {CONTACT_STATUSES.map((status) => (
+              <SelectItem key={status} value={status}>
+                {STATUS_LABELS[status]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         {/* Category */}
         <Select value={category || '__all__'} onValueChange={(v) => onCategoryChange(v === '__all__' ? '' : v)}>
-          <SelectTrigger className="w-full sm:w-[200px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="All categories" />
           </SelectTrigger>
           <SelectContent>
@@ -134,37 +146,11 @@ export function LeadFilters({
           </Select>
         </div>
 
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearAll} className="gap-1 text-muted-foreground">
-            <XIcon className="size-3.5" />
-            Clear
-          </Button>
-        )}
-      </div>
-
-      {/* Status + quick-filter pills */}
-      <div className="flex flex-wrap gap-2">
-        {CONTACT_STATUSES.map((status) => {
-          const active = statusFilter.includes(status)
-          return (
-            <button
-              key={status}
-              onClick={() => toggleStatus(status)}
-              className={cn(
-                'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                active
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              )}
-            >
-              {STATUS_LABELS[status]}
-            </button>
-          )
-        })}
+        {/* No Website button */}
         <button
           onClick={() => onNoWebsiteChange(!noWebsite)}
           className={cn(
-            'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+            'inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
             noWebsite
               ? 'border-amber-500 bg-amber-500 text-white'
               : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground'
@@ -172,6 +158,13 @@ export function LeadFilters({
         >
           No Website
         </button>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearAll} className="gap-1 text-muted-foreground ml-auto">
+            <XIcon className="size-3.5" />
+            Clear
+          </Button>
+        )}
       </div>
     </div>
   )

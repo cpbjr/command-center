@@ -48,7 +48,7 @@ export function ClientCard({ client, onClick, taskCount, documentCount }: Client
 
   return (
     <Card
-      className="cursor-pointer hover:shadow-md transition-shadow duration-150"
+      className="cursor-pointer"
       onClick={() => onClick(client)}
     >
       <CardHeader className="pb-2">
