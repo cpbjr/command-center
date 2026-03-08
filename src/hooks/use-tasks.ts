@@ -42,9 +42,10 @@ export type TaskInsert = {
   recurrence_rule?: string | null
   tags?: string[]
   notes?: string | null
+  completed_at?: string | null
 }
 
-export type TaskUpdate = Partial<TaskInsert> & { id: number; completed_at?: string | null }
+export type TaskUpdate = Partial<TaskInsert> & { id: number }
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = {
   urgent: 0,
