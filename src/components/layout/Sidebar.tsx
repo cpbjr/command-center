@@ -46,7 +46,9 @@ export default function Sidebar({ collapsed = false, className }: SidebarProps) 
         )}
       </div>
 
-      <Separator className="bg-pine-mid/50 mx-3" />
+      <div className="px-3">
+        <Separator className="bg-pine-mid/50" />
+      </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-3 px-2">
@@ -73,7 +75,9 @@ export default function Sidebar({ collapsed = false, className }: SidebarProps) 
           ))}
         </div>
 
-        <Separator className="bg-pine-mid/50 mx-1 my-3" />
+        <div className="px-1 py-3">
+          <Separator className="bg-pine-mid/50" />
+        </div>
 
         <div className="space-y-0.5">
           {bottomNav.map(({ to, icon: Icon, label }) => (
