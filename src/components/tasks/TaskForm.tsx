@@ -55,6 +55,7 @@ interface FormState {
   client_id: string
   business_id: string
   due_date: string
+  completed_at: string
   is_template: boolean
   recurrence_rule: string
   tags: string[]
@@ -74,6 +75,7 @@ const DEFAULT_STATE: FormState = {
   client_id: '',
   business_id: '',
   due_date: todayIso(),
+  completed_at: '',
   is_template: false,
   recurrence_rule: '',
   tags: [],
@@ -101,6 +103,7 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
         client_id: task.client_id ? String(task.client_id) : '',
         business_id: task.business_id ?? '',
         due_date: task.due_date ?? '',
+        completed_at: task.completed_at ? task.completed_at.slice(0, 10) : '',
         is_template: task.is_template ?? false,
         recurrence_rule: task.recurrence_rule ?? '',
         tags: task.tags ?? [],
@@ -135,6 +138,9 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
       is_template: form.is_template,
       recurrence_rule: form.is_template ? form.recurrence_rule || null : null,
       tags: form.tags,
+      completed_at: form.status === 'done' && form.completed_at
+        ? new Date(form.completed_at + 'T12:00:00').toISOString()
+        : null,
     }
 
     if (isEditing && task) {
@@ -228,7 +234,18 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
               <label className="text-sm font-medium">Status</label>
-              <Select value={form.status} onValueChange={(v) => set('status', v as TaskStatus)}>
+              <Select
+                value={form.status}
+                onValueChange={(v) => {
+                  const newStatus = v as TaskStatus
+                  set('status', newStatus)
+                  if (newStatus === 'done' && !form.completed_at) {
+                    set('completed_at', todayIso())
+                  } else if (newStatus !== 'done') {
+                    set('completed_at', '')
+                  }
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -285,13 +302,26 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
             </Select>
           </div>
 
-          <div className="grid gap-1.5">
-            <label className="text-sm font-medium">Due Date</label>
-            <Input
-              type="date"
-              value={form.due_date}
-              onChange={(e) => set('due_date', e.target.value)}
-            />
+          <div className={form.status === 'done' ? 'grid grid-cols-2 gap-3' : ''}>
+            <div className="grid gap-1.5">
+              <label className="text-sm font-medium">Due Date</label>
+              <Input
+                type="date"
+                value={form.due_date}
+                onChange={(e) => set('due_date', e.target.value)}
+              />
+            </div>
+
+            {form.status === 'done' && (
+              <div className="grid gap-1.5">
+                <label className="text-sm font-medium">Completed Date</label>
+                <Input
+                  type="date"
+                  value={form.completed_at}
+                  onChange={(e) => set('completed_at', e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid gap-1.5">
