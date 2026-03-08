@@ -57,13 +57,13 @@
   --font-mono: var(--font-mono);
 
   /* WPA Spacing */
-  --spacing-xxs: var(--space-xxs);
-  --spacing-xs: var(--space-xs);
-  --spacing-sm: var(--space-sm);
-  --spacing-md: var(--space-md);
-  --spacing-lg: var(--space-lg);
-  --spacing-xl: var(--space-xl);
-  --spacing-xxl: var(--space-xxl);
+  --spacing-wpa-xxs: var(--space-xxs);
+  --spacing-wpa-xs: var(--space-xs);
+  --spacing-wpa-sm: var(--space-sm);
+  --spacing-wpa-md: var(--space-md);
+  --spacing-wpa-lg: var(--space-lg);
+  --spacing-wpa-xl: var(--space-xl);
+  --spacing-wpa-xxl: var(--space-xxl);
 
   /* WPA Radii */
   --radius-sm: var(--radius-sm);
