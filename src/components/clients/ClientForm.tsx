@@ -31,6 +31,7 @@ import { GbpScoreWidget } from '@/components/clients/GbpScoreWidget'
 import { GbpInsightsWidget } from '@/components/clients/GbpInsightsWidget'
 import { BaselineWidget } from '@/components/clients/BaselineWidget'
 import { DocumentList } from '@/components/clients/DocumentList'
+import { AnalyticsWidget } from '@/components/clients/AnalyticsWidget'
 
 interface ClientFormProps {
   open: boolean
@@ -275,6 +276,9 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   <GbpScoreWidget clientId={client.id} />
                   <GbpInsightsWidget clientId={client.id} />
                   <BaselineWidget clientId={client.id} />
+                  <div className="mt-6 border-t pt-4">
+                    <AnalyticsWidget clientId={client.id} clientName={client.name} />
+                  </div>
                 </TabsContent>
                 <TabsContent value="docs" className="pt-4">
                   <DocumentList clientId={client.id} />
