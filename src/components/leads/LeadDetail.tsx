@@ -21,6 +21,7 @@ import { type Business, useBusinessAudit, useUpdateBusinessStatus, useUpdateBusi
 import { AuditTriggerButton } from './AuditTriggerButton'
 import { ContactList } from '@/components/contacts/ContactList'
 import { LeadTaskList } from '@/components/tasks/LeadTaskList'
+import { BusinessCommLogWidget } from './BusinessCommLogWidget'
 import { formatDate } from '@/lib/format'
 import {
   MapPinIcon,
@@ -302,6 +303,11 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                     Tasks
                   </h3>
                   <LeadTaskList businessId={business.id} />
+                </section>
+
+                {/* Activity Log */}
+                <section className="space-y-2">
+                  <BusinessCommLogWidget businessId={business.id} />
                 </section>
 
                 {/* Discovery info */}
