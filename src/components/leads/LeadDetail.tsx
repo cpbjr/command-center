@@ -141,7 +141,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(['NEW', 'IDENTIFIED', 'CONTACTED', 'REPLIED', 'CLOSED', 'CLOSED-WON'] as const).map((s) => (
+                      {(['NEW', 'IDENTIFIED', 'TARGETED', 'CONTACTED', 'REPLIED', 'CLOSED', 'CLOSED-WON'] as const).map((s) => (
                         <SelectItem key={s} value={s}>
                           {s === 'CLOSED-WON' ? 'Closed-Won' : s.charAt(0) + s.slice(1).toLowerCase()}
                         </SelectItem>
