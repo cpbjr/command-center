@@ -10,7 +10,7 @@ export interface Business {
   gbp_categories: string[]
   search_query: string
   discovered_at: string
-  contact_status: 'IDENTIFIED' | 'NEW' | 'CONTACTED' | 'REPLIED' | 'CLOSED' | 'CLOSED-WON'
+  contact_status: 'IDENTIFIED' | 'NEW' | 'TARGETED' | 'CONTACTED' | 'REPLIED' | 'CLOSED' | 'CLOSED-WON'
   discovery_rank: number | null
   rank_total_candidates: number | null
   google_maps_uri: string

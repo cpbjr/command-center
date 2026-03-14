@@ -11,11 +11,12 @@ import { useBusinessCategories } from '@/hooks/use-businesses'
 import { XIcon, SearchIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const CONTACT_STATUSES = ['NEW', 'IDENTIFIED', 'CONTACTED', 'REPLIED', 'CLOSED', 'CLOSED-WON'] as const
+const CONTACT_STATUSES = ['NEW', 'IDENTIFIED', 'TARGETED', 'CONTACTED', 'REPLIED', 'CLOSED', 'CLOSED-WON'] as const
 
 const STATUS_LABELS: Record<string, string> = {
   NEW: 'New',
   IDENTIFIED: 'Identified',
+  TARGETED: 'Targeted',
   CONTACTED: 'Contacted',
   REPLIED: 'Replied',
   CLOSED: 'Closed',

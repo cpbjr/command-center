@@ -19,6 +19,10 @@ const statusConfig: Record<
     label: 'Identified',
     className: 'bg-violet-100 text-violet-700 border-violet-200',
   },
+  TARGETED: {
+    label: 'Targeted',
+    className: 'bg-orange-100 text-orange-700 border-orange-200',
+  },
   CONTACTED: {
     label: 'Contacted',
     className: 'bg-blue-100 text-blue-700 border-blue-200',
