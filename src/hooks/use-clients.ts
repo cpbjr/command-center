@@ -18,6 +18,7 @@ export interface Client {
   status: ClientStatus
   start_date: string
   notes: string
+  folder_path: string | null
   created_at: string
   updated_at: string
 }

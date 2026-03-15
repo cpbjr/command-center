@@ -51,6 +51,7 @@ type FormValues = {
   status: ClientStatus
   start_date: string
   notes: string
+  folder_path: string
 }
 
 const SERVICE_TIERS: ServiceTier[] = ['Lazy Ranking', 'Core 30', 'Geographic Expansion', 'Quick Win']
@@ -68,6 +69,7 @@ const emptyForm = (): FormValues => ({
   status: 'active',
   start_date: '',
   notes: '',
+  folder_path: '',
 })
 
 function clientToForm(client: Client): FormValues {
@@ -83,6 +85,7 @@ function clientToForm(client: Client): FormValues {
     status: client.status ?? 'active',
     start_date: client.start_date ?? '',
     notes: client.notes ?? '',
+    folder_path: client.folder_path ?? '',
   }
 }
 
@@ -184,6 +187,15 @@ function ClientFormFields({
         />
       </div>
 
+      <div className="space-y-1">
+        <label className="text-sm font-medium">File server folder</label>
+        <Input
+          value={values.folder_path}
+          onChange={(e) => set('folder_path', e.target.value)}
+          placeholder="WhitePineAgency/Clients/Active/Client-Name"
+        />
+      </div>
+
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
         <Button type="submit" disabled={submitting}>
@@ -227,6 +239,7 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
         status: values.status,
         start_date: values.start_date || (null as unknown as string),
         notes: values.notes,
+        folder_path: values.folder_path.trim() || null,
       }
       if (isEdit && client) {
         await updateClient.mutateAsync({ id: client.id, ...payload })
@@ -281,7 +294,7 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   </div>
                 </TabsContent>
                 <TabsContent value="docs" className="pt-4">
-                  <DocumentList clientId={client.id} />
+                  <DocumentList folderPath={client.folder_path ?? null} />
                 </TabsContent>
               </Tabs>
             </div>

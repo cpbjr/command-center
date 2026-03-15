@@ -19,6 +19,7 @@ export interface Business {
   user_rating_count: number | null
   latest_score: number | null
   notes: string
+  folder_path: string | null
 }
 
 export interface BusinessAudit {

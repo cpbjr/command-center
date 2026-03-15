@@ -26,6 +26,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_FILE_SERVER_BASE_URL: ${{ secrets.VITE_FILE_SERVER_BASE_URL }}
+          VITE_FILE_SERVER_API_KEY: ${{ secrets.VITE_FILE_SERVER_API_KEY }}
         run: npm run build
 
       - name: Deploy to beefy via rsync
