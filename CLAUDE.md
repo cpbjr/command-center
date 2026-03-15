@@ -21,7 +21,7 @@ When creating plans always save a copy to .agent/Tasks/Implementation/. When wor
 |-----|-------|
 | Project ref | `klyzdnocgrvassppripi` |
 | URL | `https://klyzdnocgrvassppripi.supabase.co` |
-| Schema | `public` |
+| Schema | `WPA` |
 | MCP project name | `white-pine-projects` |
 
 **Querying via MCP-as-code:**
@@ -35,6 +35,7 @@ npx tsx run.ts supabase:query '{"project":"white-pine-projects","table":"wpa_tas
 npx supabase@latest link --project-ref klyzdnocgrvassppripi
 npx supabase@latest db push
 ```
+## ALWAYS USE "WPA" SCHEMA, NEVER "PUBLIC".
 
 ---
 
