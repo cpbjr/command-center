@@ -326,41 +326,50 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
                   <div className="max-h-52 overflow-y-auto py-1">
                     {businessesLoading ? (
                       <p className="px-3 py-2 text-sm text-muted-foreground">Loading…</p>
-                    ) : (
-                    <>
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-                      onClick={() => { set('business_id', ''); setLeadOpen(false) }}
-                    >
-                      {!form.business_id && <CheckIcon className="size-3.5" />}
-                      <span className={!form.business_id ? 'ml-0' : 'ml-5'}>None</span>
-                    </button>
-                    {businesses
-                      .filter(b => b.name.toLowerCase().includes(leadSearch.toLowerCase()))
-                      .map(b => (
+                    ) : (() => {
+                      const filtered = businesses.filter(b =>
+                        b.name.toLowerCase().includes(leadSearch.toLowerCase())
+                      )
+                      const visible = filtered.slice(0, 100)
+                      const hiddenCount = filtered.length - visible.length
+                      return (
+                        <>
                         <button
-                          key={b.id}
                           type="button"
                           className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-                          onClick={() => {
-                            set('business_id', b.id)
-                            set('client_id', '')
-                            setLeadOpen(false)
-                          }}
+                          onClick={() => { set('business_id', ''); setLeadOpen(false) }}
                         >
-                          {form.business_id === b.id
-                            ? <CheckIcon className="size-3.5 shrink-0" />
-                            : <span className="size-3.5 shrink-0" />}
-                          <span className="truncate">{b.name}</span>
+                          {!form.business_id && <CheckIcon className="size-3.5" />}
+                          <span className={!form.business_id ? 'ml-0' : 'ml-5'}>None</span>
                         </button>
-                      ))
-                    }
-                    {businesses.filter(b => b.name.toLowerCase().includes(leadSearch.toLowerCase())).length === 0 && (
-                      <p className="px-3 py-2 text-sm text-muted-foreground">No results</p>
-                    )}
-                    </>
-                    )}
+                        {visible.map(b => (
+                          <button
+                            key={b.id}
+                            type="button"
+                            className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                            onClick={() => {
+                              set('business_id', b.id)
+                              set('client_id', '')
+                              setLeadOpen(false)
+                            }}
+                          >
+                            {form.business_id === b.id
+                              ? <CheckIcon className="size-3.5 shrink-0" />
+                              : <span className="size-3.5 shrink-0" />}
+                            <span className="truncate">{b.name}</span>
+                          </button>
+                        ))}
+                        {filtered.length === 0 && (
+                          <p className="px-3 py-2 text-sm text-muted-foreground">No results</p>
+                        )}
+                        {hiddenCount > 0 && (
+                          <p className="px-3 py-2 text-xs text-muted-foreground border-t">
+                            {hiddenCount} more — type to narrow results
+                          </p>
+                        )}
+                        </>
+                      )
+                    })()}
                   </div>
                 </div>
               )}

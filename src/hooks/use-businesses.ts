@@ -217,14 +217,22 @@ export function useBusinessesSimple() {
   return useQuery<{ id: string; name: string }[]>({
     queryKey: ['businesses-simple'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('wpa_businesses')
-        .select('id, name')
-        .order('name', { ascending: true })
-        .limit(10000)
-
-      if (error) throw error
-      return (data ?? []) as { id: string; name: string }[]
+      const PAGE = 1000
+      const all: { id: string; name: string }[] = []
+      let from = 0
+      while (true) {
+        const { data, error } = await supabase
+          .from('wpa_businesses')
+          .select('id, name')
+          .order('name', { ascending: true })
+          .range(from, from + PAGE - 1)
+        if (error) throw error
+        if (!data || data.length === 0) break
+        all.push(...(data as { id: string; name: string }[]))
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+      return all
     },
     staleTime: 5 * 60 * 1000,
   })
