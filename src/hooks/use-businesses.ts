@@ -221,6 +221,7 @@ export function useBusinessesSimple() {
         .from('wpa_businesses')
         .select('id, name')
         .order('name', { ascending: true })
+        .limit(10000)
 
       if (error) throw error
       return (data ?? []) as { id: string; name: string }[]
@@ -272,6 +273,23 @@ export function useConvertToClient() {
       queryClient.invalidateQueries({ queryKey: ['businesses'] })
       queryClient.invalidateQueries({ queryKey: ['clients'] })
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+  })
+}
+
+export function useDeleteBusiness() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('wpa_businesses')
+        .delete()
+        .eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['businesses'] })
+      queryClient.invalidateQueries({ queryKey: ['businesses-simple'] })
     },
   })
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Phone, Mail, ChevronDown, ChevronUp, Star, Trash2 } from 'lucide-react'
+import { Phone, Mail, ChevronDown, ChevronUp, Star, Trash2, Pencil } from 'lucide-react'
 import { useBusinessContacts, useClientContacts, useDeleteContact, useUpdateContact, type Contact } from '@/hooks/use-contacts'
 import { ContactForm } from './ContactForm'
 import { ContactNotes } from './ContactNotes'
@@ -13,6 +13,7 @@ interface Props {
 
 function ContactRow({ contact }: { contact: Contact }) {
   const [expanded, setExpanded] = useState(false)
+  const [editing, setEditing] = useState(false)
   const deleteContact = useDeleteContact()
   const updateContact = useUpdateContact()
 
@@ -51,6 +52,13 @@ function ContactRow({ contact }: { contact: Contact }) {
         {/* Actions */}
         <div className="flex items-center gap-1">
           <button
+            onClick={() => setEditing(v => !v)}
+            className="text-muted-foreground/40 hover:text-foreground p-1"
+            title="Edit contact"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button
             onClick={() => deleteContact.mutate({ id: contact.id, business_id: contact.business_id, client_id: contact.client_id })}
             className="text-muted-foreground/40 hover:text-destructive p-1"
             title="Delete contact"
@@ -67,7 +75,13 @@ function ContactRow({ contact }: { contact: Contact }) {
         </div>
       </div>
 
-      {expanded && (
+      {editing && (
+        <div className="p-3 border-t bg-muted/10">
+          <ContactForm contact={contact} onDone={() => setEditing(false)} />
+        </div>
+      )}
+
+      {!editing && expanded && (
         <div className="p-3 border-t bg-muted/10">
           <ContactNotes contactId={contact.id} />
         </div>

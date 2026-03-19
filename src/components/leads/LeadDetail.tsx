@@ -13,12 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { StatusBadge } from './StatusBadge'
 import { ScoreBadge } from './ScoreBadge'
 import { ConvertToClientDialog } from './ConvertToClientDialog'
-import { type Business, useBusinessAudit, useUpdateBusinessStatus, useUpdateBusinessNotes } from '@/hooks/use-businesses'
+import { type Business, useBusinessAudit, useUpdateBusinessStatus, useUpdateBusinessNotes, useDeleteBusiness } from '@/hooks/use-businesses'
 import { AuditTriggerButton } from './AuditTriggerButton'
 import { ContactList } from '@/components/contacts/ContactList'
 import { LeadTaskList } from '@/components/tasks/LeadTaskList'
@@ -36,7 +44,9 @@ import {
   CheckCircle2Icon,
   XCircleIcon,
   MinusCircleIcon,
+  Trash2Icon,
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface LeadDetailProps {
   business: Business | null
@@ -70,7 +80,9 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
   const { data: audit } = useBusinessAudit(business?.id ?? null)
   const updateStatus = useUpdateBusinessStatus()
   const updateNotes = useUpdateBusinessNotes()
+  const deleteBusiness = useDeleteBusiness()
   const [convertDialogOpen, setConvertDialogOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [localStatus, setLocalStatus] = useState<Business['contact_status'] | null>(business?.contact_status ?? null)
   const [localNotes, setLocalNotes] = useState(business?.notes ?? '')
   const [saveIndicator, setSaveIndicator] = useState<'idle' | 'saving' | 'saved'>('idle')
@@ -128,7 +140,18 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                         </SheetDescription>
                       )}
                     </div>
-                    <ScoreBadge score={business.latest_score} className="shrink-0 text-sm" />
+                    <div className="flex items-center gap-2 shrink-0">
+                      <ScoreBadge score={business.latest_score} className="text-sm" />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => setDeleteConfirmOpen(true)}
+                        title="Delete lead"
+                      >
+                        <Trash2Icon className="size-4" />
+                      </Button>
+                    </div>
                   </div>
                 </SheetHeader>
 
@@ -311,7 +334,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Tasks
                       </h3>
-                      <LeadTaskList businessId={business.id} />
+                      <LeadTaskList businessId={business.id} businessName={business.name} />
                     </section>
 
                     {/* Activity Log */}
@@ -371,6 +394,33 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
       onOpenChange={setConvertDialogOpen}
       business={business}
     />
+    <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Delete Lead</DialogTitle>
+          <DialogDescription>
+            Delete <strong>{business?.name}</strong>? This cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            disabled={deleteBusiness.isPending}
+            onClick={async () => {
+              if (!business) return
+              await deleteBusiness.mutateAsync(business.id)
+              setDeleteConfirmOpen(false)
+              onOpenChange(false)
+            }}
+          >
+            {deleteBusiness.isPending ? 'Deleting…' : 'Delete'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   )
 }

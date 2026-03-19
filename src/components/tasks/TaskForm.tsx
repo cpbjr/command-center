@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,7 +21,7 @@ import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/hooks/use-t
 import { useClients } from '@/hooks/use-clients'
 import { useBusinessesSimple } from '@/hooks/use-businesses'
 import { Badge } from '@/components/ui/badge'
-import { XIcon } from 'lucide-react'
+import { XIcon, ChevronsUpDownIcon, CheckIcon } from 'lucide-react'
 
 interface TaskFormProps {
   open: boolean
@@ -29,6 +29,7 @@ interface TaskFormProps {
   task?: Task | null
   defaultClientId?: number
   defaultBusinessId?: string
+  defaultBusinessName?: string
   defaultProjectId?: number
 }
 
@@ -82,13 +83,16 @@ const DEFAULT_STATE: FormState = {
   tagInput: '',
 }
 
-export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBusinessId, defaultProjectId }: TaskFormProps) {
+export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBusinessId, defaultBusinessName, defaultProjectId }: TaskFormProps) {
   const [form, setForm] = useState<FormState>(DEFAULT_STATE)
+  const [leadSearch, setLeadSearch] = useState('')
+  const [leadOpen, setLeadOpen] = useState(false)
+  const leadRef = useRef<HTMLDivElement>(null)
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
   const { data: clients = [] } = useClients()
-  const { data: businesses = [] } = useBusinessesSimple()
+  const { data: businesses = [], isLoading: businessesLoading } = useBusinessesSimple()
 
   const isEditing = !!task
 
@@ -117,7 +121,19 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
         business_id: defaultBusinessId ?? '',
       })
     }
-  }, [task, open, defaultClientId, defaultBusinessId])
+    setLeadSearch('')
+    setLeadOpen(false)
+  }, [task, open, defaultClientId, defaultBusinessId, defaultBusinessName])
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (leadRef.current && !leadRef.current.contains(e.target as Node)) {
+        setLeadOpen(false)
+      }
+    }
+    if (leadOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [leadOpen])
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -280,26 +296,75 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
             </div>
           </div>
 
-          <div className="grid gap-1.5">
+          <div className="grid gap-1.5" ref={leadRef}>
             <label className="text-sm font-medium">Lead</label>
-            <Select
-              value={form.business_id}
-              onValueChange={(v) => {
-                const val = v === 'none' ? '' : v
-                set('business_id', val)
-                if (val) set('client_id', '')
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="None" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {businesses.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <button
+                type="button"
+                className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus:border-ring focus:ring-[3px] focus:ring-ring/50"
+                onClick={() => { setLeadOpen(v => !v); setLeadSearch('') }}
+              >
+                <span className={form.business_id ? '' : 'text-muted-foreground'}>
+                  {form.business_id
+                    ? (businesses.find(b => b.id === form.business_id)?.name ?? defaultBusinessName ?? 'Loading…')
+                    : 'None'}
+                </span>
+                <ChevronsUpDownIcon className="size-4 opacity-50 shrink-0" />
+              </button>
+
+              {leadOpen && (
+                <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md">
+                  <div className="p-1.5 border-b">
+                    <Input
+                      autoFocus
+                      placeholder="Search leads…"
+                      value={leadSearch}
+                      onChange={e => setLeadSearch(e.target.value)}
+                      className="h-7 text-sm"
+                    />
+                  </div>
+                  <div className="max-h-52 overflow-y-auto py-1">
+                    {businessesLoading ? (
+                      <p className="px-3 py-2 text-sm text-muted-foreground">Loading…</p>
+                    ) : (
+                    <>
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => { set('business_id', ''); setLeadOpen(false) }}
+                    >
+                      {!form.business_id && <CheckIcon className="size-3.5" />}
+                      <span className={!form.business_id ? 'ml-0' : 'ml-5'}>None</span>
+                    </button>
+                    {businesses
+                      .filter(b => b.name.toLowerCase().includes(leadSearch.toLowerCase()))
+                      .map(b => (
+                        <button
+                          key={b.id}
+                          type="button"
+                          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                          onClick={() => {
+                            set('business_id', b.id)
+                            set('client_id', '')
+                            setLeadOpen(false)
+                          }}
+                        >
+                          {form.business_id === b.id
+                            ? <CheckIcon className="size-3.5 shrink-0" />
+                            : <span className="size-3.5 shrink-0" />}
+                          <span className="truncate">{b.name}</span>
+                        </button>
+                      ))
+                    }
+                    {businesses.filter(b => b.name.toLowerCase().includes(leadSearch.toLowerCase())).length === 0 && (
+                      <p className="px-3 py-2 text-sm text-muted-foreground">No results</p>
+                    )}
+                    </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className={form.status === 'done' ? 'grid grid-cols-2 gap-3' : ''}>

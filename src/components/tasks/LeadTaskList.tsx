@@ -7,9 +7,10 @@ import { TaskForm } from './TaskForm'
 
 interface LeadTaskListProps {
   businessId: string
+  businessName?: string
 }
 
-export function LeadTaskList({ businessId }: LeadTaskListProps) {
+export function LeadTaskList({ businessId, businessName }: LeadTaskListProps) {
   const { data: tasks = [], isLoading } = useTasks(undefined, undefined, businessId)
   const [formOpen, setFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -54,6 +55,7 @@ export function LeadTaskList({ businessId }: LeadTaskListProps) {
         onOpenChange={setFormOpen}
         task={editingTask}
         defaultBusinessId={businessId}
+        defaultBusinessName={businessName}
       />
     </div>
   )
