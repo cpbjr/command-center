@@ -26,7 +26,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { StatusBadge } from './StatusBadge'
 import { ScoreBadge } from './ScoreBadge'
 import { ConvertToClientDialog } from './ConvertToClientDialog'
-import { type Business, useBusinessAudit, useUpdateBusinessStatus, useUpdateBusinessNotes, useDeleteBusiness } from '@/hooks/use-businesses'
+import { type Business, useBusinessAudit, useUpdateBusinessStatus, useUpdateBusinessNotes, useUpdateBusinessFolderPath, useDeleteBusiness } from '@/hooks/use-businesses'
 import { AuditTriggerButton } from './AuditTriggerButton'
 import { ContactList } from '@/components/contacts/ContactList'
 import { LeadTaskList } from '@/components/tasks/LeadTaskList'
@@ -47,6 +47,7 @@ import {
   Trash2Icon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface LeadDetailProps {
   business: Business | null
@@ -80,17 +81,20 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
   const { data: audit } = useBusinessAudit(business?.id ?? null)
   const updateStatus = useUpdateBusinessStatus()
   const updateNotes = useUpdateBusinessNotes()
+  const updateFolderPath = useUpdateBusinessFolderPath()
   const deleteBusiness = useDeleteBusiness()
   const [convertDialogOpen, setConvertDialogOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [localStatus, setLocalStatus] = useState<Business['contact_status'] | null>(business?.contact_status ?? null)
   const [localNotes, setLocalNotes] = useState(business?.notes ?? '')
+  const [localFolderPath, setLocalFolderPath] = useState(business?.folder_path ?? '')
   const [saveIndicator, setSaveIndicator] = useState<'idle' | 'saving' | 'saved'>('idle')
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     setLocalStatus(business?.contact_status ?? null)
     setLocalNotes(business?.notes ?? '')
+    setLocalFolderPath(business?.folder_path ?? '')
     setSaveIndicator('idle')
   }, [business?.id])
 
@@ -111,6 +115,15 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
       }
     )
   }, [business, localNotes, updateNotes])
+
+  const handleFolderPathBlur = useCallback(() => {
+    if (!business) return
+    const trimmed = localFolderPath.trim()
+    const current = business.folder_path ?? ''
+    if (trimmed === current) return
+
+    updateFolderPath.mutate({ id: business.id, folder_path: trimmed || null })
+  }, [business, localFolderPath, updateFolderPath])
 
   function handleStatusChange(v: Business['contact_status']) {
     if (!business) return
@@ -375,7 +388,17 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                     </section>
                   </TabsContent>
 
-                  <TabsContent value="docs" className="pt-2">
+                  <TabsContent value="docs" className="pt-2 space-y-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-muted-foreground">File server folder</label>
+                      <Input
+                        value={localFolderPath}
+                        onChange={(e) => setLocalFolderPath(e.target.value)}
+                        onBlur={handleFolderPathBlur}
+                        placeholder="WhitePineAgency/Clients/Leads/Business-Name"
+                        className="text-xs font-mono"
+                      />
+                    </div>
                     <DocumentList folderPath={business.folder_path ?? null} />
                   </TabsContent>
                 </Tabs>

@@ -189,6 +189,27 @@ export function useUpdateBusinessNotes() {
   })
 }
 
+export function useUpdateBusinessFolderPath() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, folder_path }: { id: string; folder_path: string | null }) => {
+      const { error } = await supabase
+        .from('wpa_businesses')
+        .update({ folder_path })
+        .eq('id', id)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['businesses'] })
+      queryClient.invalidateQueries({ queryKey: ['discovery'] })
+      queryClient.invalidateQueries({ queryKey: ['discovery-recent'] })
+      queryClient.invalidateQueries({ queryKey: ['discovery-search'] })
+    },
+  })
+}
+
 export function useRequestAudit() {
   const queryClient = useQueryClient()
 
