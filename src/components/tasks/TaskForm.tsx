@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select'
 import { useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/use-tasks'
 import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/hooks/use-tasks'
-import { useClients } from '@/hooks/use-clients'
+import { useContracts } from '@/hooks/use-contracts'
 import { useBusinessesSimple } from '@/hooks/use-businesses'
 import { Badge } from '@/components/ui/badge'
 import { XIcon, ChevronsUpDownIcon, CheckIcon } from 'lucide-react'
@@ -91,7 +91,7 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
-  const { data: clients = [] } = useClients()
+  const { data: clients = [] } = useContracts()
   const { data: businesses = [], isLoading: businessesLoading } = useBusinessesSimple()
 
   const isEditing = !!task
@@ -289,7 +289,7 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
                   {clients.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={String(c.id)}>{c.wpa_businesses?.name ?? c.business_id}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

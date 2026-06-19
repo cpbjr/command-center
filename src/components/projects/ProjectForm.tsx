@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useClients } from '@/hooks/use-clients'
+import { useContracts } from '@/hooks/use-contracts'
 import { useCreateProject, useUpdateProject } from '@/hooks/use-projects'
 import type {
   Project,
@@ -55,7 +55,7 @@ type FormState = typeof EMPTY_FORM
 export function ProjectForm({ open, onOpenChange, project }: ProjectFormProps) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
 
-  const { data: clients } = useClients()
+  const { data: clients } = useContracts()
   const createProject = useCreateProject()
   const updateProject = useUpdateProject()
 
@@ -273,7 +273,7 @@ export function ProjectForm({ open, onOpenChange, project }: ProjectFormProps) {
                 <SelectItem value="none">No client</SelectItem>
                 {(clients ?? []).map((c) => (
                   <SelectItem key={c.id} value={String(c.id)}>
-                    {c.name}
+                    {c.wpa_businesses?.name ?? c.business_id}
                   </SelectItem>
                 ))}
               </SelectContent>

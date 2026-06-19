@@ -2,15 +2,15 @@ import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { ClientCard } from './ClientCard'
 import { ClientForm } from './ClientForm'
-import { useClients } from '@/hooks/use-clients'
+import { useContracts } from '@/hooks/use-contracts'
 import { useTasks } from '@/hooks/use-tasks'
-import type { Client } from '@/hooks/use-clients'
+import type { Contract } from '@/hooks/use-contracts'
 
 export function ClientBoard() {
-  const { data: clients, isLoading, error } = useClients()
+  const { data: clients, isLoading, error } = useContracts()
   const { data: allTasks = [] } = useTasks()
   const [formOpen, setFormOpen] = useState(false)
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [selectedClient, setSelectedClient] = useState<Contract | null>(null)
 
   const taskCountsByClient = useMemo(() => {
     const counts: Record<number, number> = {}
@@ -27,7 +27,7 @@ export function ClientBoard() {
     setFormOpen(true)
   }
 
-  function handleEdit(client: Client) {
+  function handleEdit(client: Contract) {
     setSelectedClient(client)
     setFormOpen(true)
   }

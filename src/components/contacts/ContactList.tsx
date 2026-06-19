@@ -2,13 +2,12 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Phone, Mail, ChevronDown, ChevronUp, Star, Trash2, Pencil } from 'lucide-react'
-import { useBusinessContacts, useClientContacts, useDeleteContact, useUpdateContact, type Contact } from '@/hooks/use-contacts'
+import { useBusinessContacts, useDeleteContact, useUpdateContact, type Contact } from '@/hooks/use-contacts'
 import { ContactForm } from './ContactForm'
 import { ContactNotes } from './ContactNotes'
 
 interface Props {
-  businessId?: string | null
-  clientId?: number | null
+  businessId: string
 }
 
 function ContactRow({ contact }: { contact: Contact }) {
@@ -90,13 +89,10 @@ function ContactRow({ contact }: { contact: Contact }) {
   )
 }
 
-export function ContactList({ businessId, clientId }: Props) {
+export function ContactList({ businessId }: Props) {
   const [showForm, setShowForm] = useState(false)
 
-  const businessQuery = useBusinessContacts(businessId ?? null)
-  const clientQuery = useClientContacts(clientId ?? null)
-
-  const { data: contacts = [], isLoading } = businessId ? businessQuery : clientQuery
+  const { data: contacts = [], isLoading } = useBusinessContacts(businessId)
 
   return (
     <div className="space-y-2">
@@ -108,7 +104,7 @@ export function ContactList({ businessId, clientId }: Props) {
       </div>
 
       {showForm && (
-        <ContactForm businessId={businessId} clientId={clientId} onDone={() => setShowForm(false)} />
+        <ContactForm businessId={businessId} onDone={() => setShowForm(false)} />
       )}
 
       {isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}

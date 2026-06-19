@@ -30,7 +30,7 @@ import { type Business, useBusinessAudit, useUpdateBusinessStatus, useUpdateBusi
 import { AuditTriggerButton } from './AuditTriggerButton'
 import { ContactList } from '@/components/contacts/ContactList'
 import { LeadTaskList } from '@/components/tasks/LeadTaskList'
-import { BusinessCommLogWidget } from './BusinessCommLogWidget'
+import { ActivityFeed } from '@/components/shared/ActivityFeed'
 import { DocumentList } from '@/components/clients/DocumentList'
 import { formatDate } from '@/lib/format'
 import {
@@ -352,7 +352,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
 
                     {/* Activity Log */}
                     <section className="space-y-2">
-                      <BusinessCommLogWidget businessId={business.id} />
+                      <ActivityFeed businessId={business.id} />
                     </section>
 
                     {/* Discovery info */}

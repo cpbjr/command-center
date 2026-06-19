@@ -42,7 +42,7 @@ export function ConvertToClientDialog({
     setSubmitting(true)
     try {
       await convertToClient.mutateAsync({
-        business,
+        business_id: business.id,
         service_tier: serviceTier,
         monthly_revenue: monthlyRevenue ? Number(monthlyRevenue) : 0,
       })
