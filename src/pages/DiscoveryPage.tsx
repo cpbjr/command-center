@@ -129,9 +129,9 @@ export default function DiscoveryPage() {
               sub="across audited"
             />
             <StatCard
-              label="New"
+              label="Unreviewed"
               value={(stats?.newCount ?? 0).toLocaleString()}
-              sub="uncontacted"
+              sub="awaiting review"
             />
           </>
         )}
