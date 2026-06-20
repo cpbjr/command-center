@@ -5,7 +5,7 @@ export type DocumentType = 'receipt' | 'pdf' | 'image' | 'link' | 'note' | 'plan
 
 export interface WpaDocument {
   id: number
-  client_id: number | null
+  contract_id: number | null
   business_id: string | null
   title: string
   type: DocumentType
@@ -27,7 +27,7 @@ export function useAllDocuments(typeFilter?: DocumentType) {
     queryFn: async () => {
       let query = supabase
         .from('wpa_documents')
-        .select('*, wpa_clients(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name))')
         .order('created_at', { ascending: false })
 
       if (typeFilter) {
@@ -39,22 +39,22 @@ export function useAllDocuments(typeFilter?: DocumentType) {
 
       return (data ?? []).map((d: any) => ({
         ...d,
-        client_name: d.wpa_clients?.name ?? null,
-        wpa_clients: undefined,
+        client_name: d.wpa_contracts?.wpa_businesses?.name ?? null,
+        wpa_contracts: undefined,
       }))
     },
   })
 }
 
-export function useClientDocuments(clientId: number | null) {
+export function useContractDocuments(contractId: number | null) {
   return useQuery<WpaDocument[]>({
-    queryKey: ['documents', 'client', clientId],
-    enabled: !!clientId,
+    queryKey: ['documents', 'contract', contractId],
+    enabled: !!contractId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_documents')
         .select('*')
-        .eq('client_id', clientId!)
+        .eq('contract_id', contractId!)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -78,8 +78,8 @@ export function useAddDocument() {
       return data as WpaDocument
     },
     onSuccess: (data) => {
-      if (data.client_id) {
-        queryClient.invalidateQueries({ queryKey: ['documents', 'client', data.client_id] })
+      if (data.contract_id) {
+        queryClient.invalidateQueries({ queryKey: ['documents', 'contract', data.contract_id] })
       }
       if (data.business_id) {
         queryClient.invalidateQueries({ queryKey: ['documents', 'business', data.business_id] })
@@ -104,8 +104,8 @@ export function useDeleteDocument() {
       return data as WpaDocument
     },
     onSuccess: (data) => {
-      if (data.client_id) {
-        queryClient.invalidateQueries({ queryKey: ['documents', 'client', data.client_id] })
+      if (data.contract_id) {
+        queryClient.invalidateQueries({ queryKey: ['documents', 'contract', data.contract_id] })
       }
       if (data.business_id) {
         queryClient.invalidateQueries({ queryKey: ['documents', 'business', data.business_id] })

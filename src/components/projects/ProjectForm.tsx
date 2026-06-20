@@ -39,7 +39,7 @@ const EMPTY_FORM: ProjectInsert & { tagInput: string } = {
   status: 'active',
   progress_pct: 0,
   next_milestone: '',
-  client_id: null,
+  contract_id: null,
   due_date: null,
   start_date: null,
   budget_cents: 0,
@@ -70,7 +70,7 @@ export function ProjectForm({ open, onOpenChange, project }: ProjectFormProps) {
         status: project.status,
         progress_pct: project.progress_pct,
         next_milestone: project.next_milestone ?? '',
-        client_id: project.client_id ?? null,
+        contract_id: project.contract_id ?? null,
         due_date: project.due_date ?? null,
         start_date: project.start_date ?? null,
         budget_cents: project.budget_cents ?? 0,
@@ -261,9 +261,9 @@ export function ProjectForm({ open, onOpenChange, project }: ProjectFormProps) {
           <div className="space-y-1">
             <label className="text-sm font-medium text-text-primary">Client</label>
             <Select
-              value={form.client_id != null ? String(form.client_id) : 'none'}
+              value={form.contract_id != null ? String(form.contract_id) : 'none'}
               onValueChange={(val) =>
-                handleChange('client_id', val === 'none' ? null : Number(val))
+                handleChange('contract_id', val === 'none' ? null : Number(val))
               }
             >
               <SelectTrigger className="w-full">

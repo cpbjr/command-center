@@ -27,7 +27,7 @@ interface TaskFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   task?: Task | null
-  defaultClientId?: number
+  defaultContractId?: number
   defaultBusinessId?: string
   defaultBusinessName?: string
   defaultProjectId?: number
@@ -53,7 +53,7 @@ interface FormState {
   category: TaskCategory
   priority: TaskPriority
   status: TaskStatus
-  client_id: string
+  contract_id: string
   business_id: string
   due_date: string
   completed_at: string
@@ -73,7 +73,7 @@ const DEFAULT_STATE: FormState = {
   category: 'WPA Own',
   priority: 'medium',
   status: 'todo',
-  client_id: '',
+  contract_id: '',
   business_id: '',
   due_date: todayIso(),
   completed_at: '',
@@ -83,7 +83,7 @@ const DEFAULT_STATE: FormState = {
   tagInput: '',
 }
 
-export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBusinessId, defaultBusinessName, defaultProjectId }: TaskFormProps) {
+export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultBusinessId, defaultBusinessName, defaultProjectId }: TaskFormProps) {
   const [form, setForm] = useState<FormState>(DEFAULT_STATE)
   const [leadSearch, setLeadSearch] = useState('')
   const [leadOpen, setLeadOpen] = useState(false)
@@ -104,7 +104,7 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
         category: task.category,
         priority: task.priority,
         status: task.status,
-        client_id: task.client_id ? String(task.client_id) : '',
+        contract_id: task.contract_id ? String(task.contract_id) : '',
         business_id: task.business_id ?? '',
         due_date: task.due_date ?? '',
         completed_at: task.completed_at ? task.completed_at.slice(0, 10) : '',
@@ -117,13 +117,13 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
       setForm({
         ...DEFAULT_STATE,
         due_date: todayIso(),
-        client_id: defaultClientId ? String(defaultClientId) : '',
+        contract_id: defaultContractId ? String(defaultContractId) : '',
         business_id: defaultBusinessId ?? '',
       })
     }
     setLeadSearch('')
     setLeadOpen(false)
-  }, [task, open, defaultClientId, defaultBusinessId, defaultBusinessName])
+  }, [task, open, defaultContractId, defaultBusinessId, defaultBusinessName])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -148,7 +148,7 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
       category: form.category,
       priority: form.priority,
       status: form.status,
-      client_id: form.client_id ? Number(form.client_id) : null,
+      contract_id: form.contract_id ? Number(form.contract_id) : null,
       business_id: form.business_id || null,
       due_date: form.due_date || null,
       is_template: form.is_template,
@@ -276,10 +276,10 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
             <div className="grid gap-1.5">
               <label className="text-sm font-medium">Client</label>
               <Select
-                value={form.client_id}
+                value={form.contract_id}
                 onValueChange={(v) => {
                   const val = v === 'none' ? '' : v
-                  set('client_id', val)
+                  set('contract_id', val)
                   if (val) set('business_id', '')
                 }}
               >
@@ -349,7 +349,7 @@ export function TaskForm({ open, onOpenChange, task, defaultClientId, defaultBus
                             className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                             onClick={() => {
                               set('business_id', b.id)
-                              set('client_id', '')
+                              set('contract_id', '')
                               setLeadOpen(false)
                             }}
                           >

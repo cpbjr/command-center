@@ -169,8 +169,8 @@ export function ProjectDetail({ projectId, onBack, onEditProject }: ProjectDetai
             <ArrowLeftIcon className="size-4" /> Projects
           </Button>
           <h2 className="text-2xl font-semibold text-text-primary">{project.name}</h2>
-          {project.wpa_clients?.name && (
-            <p className="text-sm text-text-tertiary">{project.wpa_clients.name}</p>
+          {(project.wpa_contracts as any)?.wpa_businesses?.name && (
+            <p className="text-sm text-text-tertiary">{(project.wpa_contracts as any).wpa_businesses.name}</p>
           )}
         </div>
         <div className="flex gap-2">
@@ -447,7 +447,7 @@ export function ProjectDetail({ projectId, onBack, onEditProject }: ProjectDetai
         open={taskFormOpen}
         onOpenChange={setTaskFormOpen}
         defaultProjectId={projectId}
-        defaultClientId={project.client_id ?? undefined}
+        defaultContractId={project.contract_id ?? undefined}
       />
     </div>
   )

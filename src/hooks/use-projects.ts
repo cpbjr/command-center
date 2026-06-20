@@ -13,7 +13,7 @@ export interface Project {
   status: ProjectStatus
   progress_pct: number
   next_milestone: string | null
-  client_id: number | null
+  contract_id: number | null
   due_date: string | null
   start_date: string | null
   budget_cents: number
@@ -28,7 +28,7 @@ export interface Project {
   last_agent_activity: string | null
   created_at: string
   updated_at: string
-  wpa_clients: { name: string } | null
+  wpa_contracts: { id: number; wpa_businesses: { name: string } | null } | null
 }
 
 export type ProjectInsert = {
@@ -37,7 +37,7 @@ export type ProjectInsert = {
   status: ProjectStatus
   progress_pct: number
   next_milestone?: string | null
-  client_id?: number | null
+  contract_id?: number | null
   due_date?: string | null
   start_date?: string | null
   budget_cents?: number
@@ -70,20 +70,20 @@ export function useProjects(filters?: {
   status?: ProjectStatus
   category?: ProjectCategory
   priority?: ProjectPriority
-  clientId?: number
+  contractId?: number
 }) {
   return useQuery<Project[]>({
     queryKey: ['projects', filters],
     queryFn: async () => {
       let query = supabase
         .from('wpa_projects')
-        .select('*, wpa_clients(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name))')
         .order('name', { ascending: true })
 
       if (filters?.status) query = query.eq('status', filters.status)
       if (filters?.category) query = query.eq('category', filters.category)
       if (filters?.priority) query = query.eq('priority', filters.priority)
-      if (filters?.clientId) query = query.eq('client_id', filters.clientId)
+      if (filters?.contractId) query = query.eq('contract_id', filters.contractId)
 
       const { data, error } = await query
       if (error) throw error
@@ -106,7 +106,7 @@ export function useProject(id: number | null) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_projects')
-        .select('*, wpa_clients(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name))')
         .eq('id', id!)
         .single()
 
@@ -124,7 +124,7 @@ export function useCreateProject() {
       const { data, error } = await supabase
         .from('wpa_projects')
         .insert(project)
-        .select('*, wpa_clients(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name))')
         .single()
 
       if (error) throw error
@@ -145,7 +145,7 @@ export function useUpdateProject() {
         .from('wpa_projects')
         .update(updates)
         .eq('id', id)
-        .select('*, wpa_clients(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name))')
         .single()
 
       if (error) throw error
@@ -184,7 +184,7 @@ export function useProjectTasks(projectId: number | null) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_tasks')
-        .select('*, wpa_clients(name), wpa_businesses(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name)), wpa_businesses(name)')
         .eq('project_id', projectId!)
         .eq('is_template', false)
         .order('created_at', { ascending: false })

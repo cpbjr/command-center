@@ -12,7 +12,7 @@ interface ClientTaskListProps {
 
 export function ClientTaskList({ clientId, businessId }: ClientTaskListProps) {
   // If the client has a linked business, fetch tasks by business_id
-  // Otherwise fall back to client_id for legacy clients
+  // Otherwise fall back to contract_id (clientId == contractId since IDs map 1:1)
   const { data: tasks = [], isLoading } = useTasks(
     undefined,
     businessId ? undefined : clientId,
@@ -60,7 +60,7 @@ export function ClientTaskList({ clientId, businessId }: ClientTaskListProps) {
         open={formOpen}
         onOpenChange={setFormOpen}
         task={editingTask}
-        defaultClientId={clientId}
+        defaultContractId={clientId}
         defaultBusinessId={businessId || undefined}
       />
     </div>

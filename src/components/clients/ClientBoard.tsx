@@ -15,8 +15,8 @@ export function ClientBoard() {
   const taskCountsByClient = useMemo(() => {
     const counts: Record<number, number> = {}
     for (const task of allTasks) {
-      if (task.client_id != null && task.status !== 'done') {
-        counts[task.client_id] = (counts[task.client_id] ?? 0) + 1
+      if (task.contract_id != null && task.status !== 'done') {
+        counts[task.contract_id] = (counts[task.contract_id] ?? 0) + 1
       }
     }
     return counts

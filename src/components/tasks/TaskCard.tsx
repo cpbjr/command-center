@@ -101,11 +101,11 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
           </span>
 
           {/* Client name */}
-          {task.wpa_clients?.name && (
+          {(task.wpa_contracts as any)?.wpa_businesses?.name && (
             <>
               <span className="text-wpa-border text-[10px]">·</span>
               <span className="text-[11px] italic text-text-secondary">
-                {task.wpa_clients.name}
+                {(task.wpa_contracts as any).wpa_businesses.name}
               </span>
             </>
           )}
