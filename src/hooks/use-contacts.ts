@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 
 export interface Contact {
   id: number
-  business_id: string
+  business_id: string | null
   name: string
   last_name: string
   role: string
