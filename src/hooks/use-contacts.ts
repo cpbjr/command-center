@@ -3,8 +3,7 @@ import { supabase } from '@/lib/supabase'
 
 export interface Contact {
   id: number
-  business_id: string | null
-  client_id: number | null
+  business_id: string
   name: string
   last_name: string
   role: string
@@ -44,25 +43,6 @@ export function useBusinessContacts(businessId: string | null) {
   })
 }
 
-// Fetch contacts for a client
-export function useClientContacts(clientId: number | null) {
-  return useQuery({
-    queryKey: ['contacts', 'client', clientId],
-    queryFn: async () => {
-      if (!clientId) return []
-      const { data, error } = await supabase
-        .from('wpa_contacts')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('is_primary', { ascending: false })
-        .order('created_at', { ascending: true })
-      if (error) throw error
-      return data as Contact[]
-    },
-    enabled: !!clientId,
-  })
-}
-
 // Add a contact
 export function useAddContact() {
   const qc = useQueryClient()
@@ -78,7 +58,6 @@ export function useAddContact() {
     },
     onSuccess: (_, vars) => {
       if (vars.business_id) qc.invalidateQueries({ queryKey: ['contacts', 'business', vars.business_id] })
-      if (vars.client_id) qc.invalidateQueries({ queryKey: ['contacts', 'client', vars.client_id] })
     },
   })
 }
@@ -99,7 +78,6 @@ export function useUpdateContact() {
     },
     onSuccess: (data) => {
       if (data.business_id) qc.invalidateQueries({ queryKey: ['contacts', 'business', data.business_id] })
-      if (data.client_id) qc.invalidateQueries({ queryKey: ['contacts', 'client', data.client_id] })
     },
   })
 }
@@ -108,14 +86,13 @@ export function useUpdateContact() {
 export function useDeleteContact() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, business_id, client_id }: { id: number; business_id?: string | null; client_id?: number | null }) => {
+    mutationFn: async ({ id, business_id }: { id: number; business_id?: string | null }) => {
       const { error } = await supabase.from('wpa_contacts').delete().eq('id', id)
       if (error) throw error
-      return { business_id, client_id }
+      return { business_id }
     },
-    onSuccess: ({ business_id, client_id }) => {
+    onSuccess: ({ business_id }) => {
       if (business_id) qc.invalidateQueries({ queryKey: ['contacts', 'business', business_id] })
-      if (client_id) qc.invalidateQueries({ queryKey: ['contacts', 'client', client_id] })
     },
   })
 }

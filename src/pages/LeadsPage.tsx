@@ -11,7 +11,7 @@ const PAGE_SIZE = 50
 export default function LeadsPage() {
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string[]>([])
+  const [statusFilter, setStatusFilter] = useState<string[]>(['NEW', 'TARGETED', 'CONTACTED', 'REPLIED'])
   const [category, setCategory] = useState('')
   const [scoreRange, setScoreRange] = useState<[number, number]>([0, 5])
   const [noWebsite, setNoWebsite] = useState(false)

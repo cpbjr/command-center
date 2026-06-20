@@ -1,11 +1,5 @@
 import { useState, useEffect } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -22,11 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useCreateClient, useUpdateClient } from '@/hooks/use-clients'
-import type { Client, ClientInsert, ServiceTier, ClientStatus } from '@/hooks/use-clients'
+import { useUpdateContract } from '@/hooks/use-contracts'
+import type { Contract, ContractUpdate, ServiceTier, ContractStatus } from '@/hooks/use-contracts'
 import { ContactList } from '@/components/contacts/ContactList'
 import { ClientTaskList } from '@/components/tasks/ClientTaskList'
-import { CommLogWidget } from '@/components/clients/CommLogWidget'
+import { ActivityFeed } from '@/components/shared/ActivityFeed'
 import { GbpScoreWidget } from '@/components/clients/GbpScoreWidget'
 import { GbpInsightsWidget } from '@/components/clients/GbpInsightsWidget'
 import { BaselineWidget } from '@/components/clients/BaselineWidget'
@@ -36,32 +30,24 @@ import { AnalyticsWidget } from '@/components/clients/AnalyticsWidget'
 interface ClientFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  client?: Client | null
+  client?: Contract | null
 }
 
 type FormValues = {
-  name: string
-  address: string
-  phone: string
-  website_url: string
   service_tier: ServiceTier
   monthly_revenue: string
   current_phase: string
   next_action: string
-  status: ClientStatus
+  status: ContractStatus
   start_date: string
   notes: string
   folder_path: string
 }
 
 const SERVICE_TIERS: ServiceTier[] = ['Lazy Ranking', 'Core 30', 'Geographic Expansion', 'Quick Win']
-const STATUSES: ClientStatus[] = ['active', 'paused', 'churned']
+const STATUSES: ContractStatus[] = ['active', 'paused', 'churned']
 
 const emptyForm = (): FormValues => ({
-  name: '',
-  address: '',
-  phone: '',
-  website_url: '',
   service_tier: 'Lazy Ranking',
   monthly_revenue: '',
   current_phase: '',
@@ -72,12 +58,8 @@ const emptyForm = (): FormValues => ({
   folder_path: '',
 })
 
-function clientToForm(client: Client): FormValues {
+function clientToForm(client: Contract): FormValues {
   return {
-    name: client.name ?? '',
-    address: client.address ?? '',
-    phone: client.phone ?? '',
-    website_url: client.website_url ?? '',
     service_tier: client.service_tier ?? 'Lazy Ranking',
     monthly_revenue: client.monthly_revenue != null ? String(client.monthly_revenue) : '',
     current_phase: client.current_phase ?? '',
@@ -104,32 +86,6 @@ function ClientFormFields({
 }) {
   return (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Name *</label>
-        <Input
-          value={values.name}
-          onChange={(e) => set('name', e.target.value)}
-          placeholder="Client business name"
-          required
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Address</label>
-        <Input value={values.address} onChange={(e) => set('address', e.target.value)} placeholder="123 Main St, Eagle, ID" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <label className="text-sm font-medium">Phone</label>
-          <Input value={values.phone} onChange={(e) => set('phone', e.target.value)} placeholder="(208) 555-1234" />
-        </div>
-        <div className="space-y-1">
-          <label className="text-sm font-medium">Website</label>
-          <Input value={values.website_url} onChange={(e) => set('website_url', e.target.value)} placeholder="https://..." />
-        </div>
-      </div>
-
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
           <label className="text-sm font-medium">Service Tier</label>
@@ -142,7 +98,7 @@ function ClientFormFields({
         </div>
         <div className="space-y-1">
           <label className="text-sm font-medium">Status</label>
-          <Select value={values.status} onValueChange={(v) => set('status', v as ClientStatus)}>
+          <Select value={values.status} onValueChange={(v) => set('status', v as ContractStatus)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               {STATUSES.map((s) => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
@@ -211,8 +167,7 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
   const [values, setValues] = useState<FormValues>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
 
-  const createClient = useCreateClient()
-  const updateClient = useUpdateClient()
+  const updateContract = useUpdateContract()
 
   useEffect(() => {
     if (open) setValues(client ? clientToForm(client) : emptyForm())
@@ -224,14 +179,11 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!values.name.trim()) return
+    if (!client) return
     setSubmitting(true)
     try {
-      const payload: ClientInsert = {
-        name: values.name.trim(),
-        address: values.address,
-        phone: values.phone,
-        website_url: values.website_url,
+      const payload: ContractUpdate = {
+        id: client.id,
         service_tier: values.service_tier,
         monthly_revenue: values.monthly_revenue ? Number(values.monthly_revenue) : 0,
         current_phase: values.current_phase,
@@ -241,11 +193,7 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
         notes: values.notes,
         folder_path: values.folder_path.trim() || null,
       }
-      if (isEdit && client) {
-        await updateClient.mutateAsync({ id: client.id, ...payload })
-      } else {
-        await createClient.mutateAsync(payload)
-      }
+      await updateContract.mutateAsync(payload)
       onOpenChange(false)
     } finally {
       setSubmitting(false)
@@ -260,7 +208,7 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
           <ScrollArea className="h-full">
             <div className="p-6 space-y-4">
               <SheetHeader className="p-0">
-                <SheetTitle>{client.name}</SheetTitle>
+                <SheetTitle>{client.wpa_businesses?.name ?? client.business_id}</SheetTitle>
               </SheetHeader>
               <Tabs defaultValue="details">
                 <TabsList className="w-full flex-wrap h-auto gap-0.5 p-1">
@@ -277,20 +225,20 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   </form>
                 </TabsContent>
                 <TabsContent value="contacts" className="pt-4">
-                  <ContactList clientId={client.id} />
+                  <ContactList businessId={client.business_id} />
                 </TabsContent>
                 <TabsContent value="tasks" className="pt-4">
                   <ClientTaskList clientId={client.id} businessId={client.business_id} />
                 </TabsContent>
                 <TabsContent value="activity" className="pt-4">
-                  <CommLogWidget clientId={client.id} />
+                  <ActivityFeed businessId={client.business_id} />
                 </TabsContent>
                 <TabsContent value="gbp" className="pt-4 space-y-6">
                   <GbpScoreWidget clientId={client.id} />
                   <GbpInsightsWidget clientId={client.id} />
                   <BaselineWidget clientId={client.id} />
                   <div className="mt-6 border-t pt-4">
-                    <AnalyticsWidget clientId={client.id} clientName={client.name} />
+                    <AnalyticsWidget clientId={client.id} clientName={client.wpa_businesses?.name ?? client.business_id} />
                   </div>
                 </TabsContent>
                 <TabsContent value="docs" className="pt-4">
@@ -304,17 +252,6 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
     )
   }
 
-  // Add mode: simple dialog
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Add Client</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <ClientFormFields values={values} set={set} submitting={submitting} isEdit={false} onCancel={() => onOpenChange(false)} />
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
+  // Contracts are created via the convert-to-client RPC — this branch shouldn't be reached
+  return null
 }

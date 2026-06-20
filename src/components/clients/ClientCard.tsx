@@ -2,11 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/format'
 import { MapPinIcon, PhoneIcon, GlobeIcon, FileText } from 'lucide-react'
-import type { Client, ServiceTier, ClientStatus } from '@/hooks/use-clients'
+import type { Contract, ServiceTier, ContractStatus } from '@/hooks/use-contracts'
 
 interface ClientCardProps {
-  client: Client
-  onClick: (client: Client) => void
+  client: Contract
+  onClick: (client: Contract) => void
   taskCount?: number
   documentCount?: number
 }
@@ -30,7 +30,7 @@ const tierConfig: Record<ServiceTier, { label: string; className: string }> = {
   },
 }
 
-const statusConfig: Record<ClientStatus, { label: string; dotClass: string }> = {
+const statusConfig: Record<ContractStatus, { label: string; dotClass: string }> = {
   active: { label: 'Active', dotClass: 'bg-green-500' },
   paused: { label: 'Paused', dotClass: 'bg-yellow-500' },
   churned: { label: 'Churned', dotClass: 'bg-red-500' },
@@ -54,7 +54,7 @@ export function ClientCard({ client, onClick, taskCount, documentCount }: Client
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <CardTitle className="text-lg leading-tight truncate">{client.name}</CardTitle>
+            <CardTitle className="text-lg leading-tight truncate">{client.wpa_businesses?.name ?? client.business_id}</CardTitle>
             {taskCount != null && taskCount > 0 && (
               <Badge variant="outline" className="text-xs shrink-0">{taskCount}</Badge>
             )}
@@ -77,30 +77,30 @@ export function ClientCard({ client, onClick, taskCount, documentCount }: Client
         </div>
       </CardHeader>
       <CardContent className="space-y-2 text-sm">
-        {(client.address || client.phone || client.website_url) && (
+        {(client.wpa_businesses?.address || client.wpa_businesses?.phone || client.wpa_businesses?.website_url) && (
           <div className="space-y-1 pb-2 border-b border-border">
-            {client.address && (
+            {client.wpa_businesses?.address && (
               <div className="flex items-start gap-1.5 text-muted-foreground">
                 <MapPinIcon className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                <span className="text-xs">{client.address}</span>
+                <span className="text-xs">{client.wpa_businesses.address}</span>
               </div>
             )}
-            {client.phone && (
+            {client.wpa_businesses?.phone && (
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <PhoneIcon className="h-3.5 w-3.5 shrink-0" />
-                <span className="text-xs">{client.phone}</span>
+                <span className="text-xs">{client.wpa_businesses.phone}</span>
               </div>
             )}
-            {client.website_url && (
+            {client.wpa_businesses?.website_url && (
               <div className="flex items-center gap-1.5 text-muted-foreground" onClick={(e) => e.stopPropagation()}>
                 <GlobeIcon className="h-3.5 w-3.5 shrink-0" />
                 <a
-                  href={client.website_url}
+                  href={client.wpa_businesses.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-blue-600 hover:underline truncate"
                 >
-                  {client.website_url.replace(/^https?:\/\//, '')}
+                  {client.wpa_businesses.website_url.replace(/^https?:\/\//, '')}
                 </a>
               </div>
             )}

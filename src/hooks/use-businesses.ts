@@ -263,45 +263,25 @@ export function useConvertToClient() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({
-      business,
+      business_id,
       service_tier,
       monthly_revenue,
     }: {
-      business: Business
+      business_id: string
       service_tier: string
       monthly_revenue?: number
     }) => {
-      // First update business status to CLOSED-WON
-      const { error: bizError } = await supabase
-        .from('wpa_businesses')
-        .update({ contact_status: 'CLOSED-WON' })
-        .eq('id', business.id)
-      if (bizError) throw bizError
-
-      // Then create the client, linking back to the business record
-      const { data, error } = await supabase
-        .from('wpa_clients')
-        .insert({
-          name: business.name,
-          address: business.address ?? '',
-          phone: business.phone ?? '',
-          website_url: business.website_url ?? '',
-          business_id: business.id,
-          service_tier,
-          status: 'active',
-          start_date: new Date().toISOString().split('T')[0],
-          monthly_revenue: monthly_revenue ?? 0,
-          notes: '',
-        })
-        .select()
-        .single()
+      const { data, error } = await supabase.rpc('convert_to_client', {
+        p_business_id: business_id,
+        p_service_tier: service_tier,
+        p_monthly_revenue: monthly_revenue ?? 0,
+      })
       if (error) throw error
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['businesses'] })
-      queryClient.invalidateQueries({ queryKey: ['clients'] })
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['contracts'] })
     },
   })
 }

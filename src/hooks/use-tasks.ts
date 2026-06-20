@@ -12,7 +12,7 @@ export interface Task {
   category: TaskCategory
   status: TaskStatus
   priority: TaskPriority
-  client_id: number | null
+  contract_id: number | null
   business_id: string | null
   project_id: number | null
   due_date: string | null
@@ -24,7 +24,7 @@ export interface Task {
   last_generated_at: string | null
   tags: string[]
   notes: string | null
-  wpa_clients: { name: string } | null
+  wpa_contracts: { id: number; wpa_businesses: { name: string } | null } | null
   wpa_businesses: { name: string } | null
 }
 
@@ -34,7 +34,7 @@ export type TaskInsert = {
   category: TaskCategory
   status?: TaskStatus
   priority?: TaskPriority
-  client_id?: number | null
+  contract_id?: number | null
   business_id?: string | null
   project_id?: number | null
   due_date?: string | null
@@ -54,20 +54,20 @@ const PRIORITY_ORDER: Record<TaskPriority, number> = {
   low: 3,
 }
 
-export function useTasks(categoryFilter?: string, clientId?: number, businessId?: string) {
+export function useTasks(categoryFilter?: string, contractId?: number, businessId?: string) {
   return useQuery<Task[]>({
-    queryKey: ['tasks', categoryFilter, clientId, businessId],
+    queryKey: ['tasks', categoryFilter, contractId, businessId],
     queryFn: async () => {
       let query = supabase
         .from('wpa_tasks')
-        .select('*, wpa_clients(name), wpa_businesses(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name)), wpa_businesses(name)')
 
       if (categoryFilter) {
         query = query.eq('category', categoryFilter)
       }
 
-      if (clientId) {
-        query = query.eq('client_id', clientId)
+      if (contractId) {
+        query = query.eq('contract_id', contractId)
       }
 
       if (businessId) {
@@ -97,7 +97,7 @@ export function useCreateTask() {
       const { data, error } = await supabase
         .from('wpa_tasks')
         .insert(task)
-        .select('*, wpa_clients(name), wpa_businesses(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name)), wpa_businesses(name)')
         .single()
 
       if (error) throw error
@@ -127,7 +127,7 @@ export function useUpdateTask() {
         .from('wpa_tasks')
         .update(payload)
         .eq('id', id)
-        .select('*, wpa_clients(name), wpa_businesses(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name)), wpa_businesses(name)')
         .single()
 
       if (error) throw error
@@ -182,7 +182,7 @@ export function useTemplateTasks() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_tasks')
-        .select('*, wpa_clients(name), wpa_businesses(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name)), wpa_businesses(name)')
         .eq('is_template', true)
         .order('created_at', { ascending: false })
 
@@ -199,7 +199,7 @@ export function useGenerateFromTemplates() {
     mutationFn: async () => {
       const { data: templates, error: fetchError } = await supabase
         .from('wpa_tasks')
-        .select('*, wpa_clients(name), wpa_businesses(name)')
+        .select('*, wpa_contracts(id, wpa_businesses(name)), wpa_businesses(name)')
         .eq('is_template', true)
         .not('recurrence_rule', 'is', null)
 
@@ -215,7 +215,7 @@ export function useGenerateFromTemplates() {
           category: template.category,
           status: 'todo',
           priority: template.priority,
-          client_id: template.client_id,
+          contract_id: template.contract_id,
           business_id: template.business_id,
           project_id: template.project_id,
           due_date: template.due_date,
