@@ -5,12 +5,11 @@ import { useAddContact, useUpdateContact, type Contact } from '@/hooks/use-conta
 
 interface Props {
   businessId?: string | null
-  clientId?: number | null
   contact?: Contact | null
   onDone: () => void
 }
 
-export function ContactForm({ businessId, clientId, contact, onDone }: Props) {
+export function ContactForm({ businessId, contact, onDone }: Props) {
   const add = useAddContact()
   const update = useUpdateContact()
   const isEditing = !!contact
@@ -33,12 +32,10 @@ export function ContactForm({ businessId, clientId, contact, onDone }: Props) {
         phone: phone.trim(),
         email: email.trim(),
         business_id: contact.business_id,
-        client_id: contact.client_id,
       })
     } else {
       await add.mutateAsync({
         business_id: businessId ?? null,
-        client_id: clientId ?? null,
         name: name.trim(),
         last_name: lastName.trim(),
         role: role.trim(),

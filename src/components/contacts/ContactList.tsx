@@ -21,7 +21,7 @@ function ContactRow({ contact }: { contact: Contact }) {
       <div className="flex items-center gap-2 p-2 bg-card hover:bg-muted/30 transition-colors">
         {/* Primary star */}
         <button
-          onClick={() => updateContact.mutate({ id: contact.id, is_primary: !contact.is_primary, business_id: contact.business_id, client_id: contact.client_id })}
+          onClick={() => updateContact.mutate({ id: contact.id, is_primary: !contact.is_primary, business_id: contact.business_id })}
           className={contact.is_primary ? 'text-yellow-500' : 'text-muted-foreground/30 hover:text-yellow-400'}
           title={contact.is_primary ? 'Primary contact' : 'Set as primary'}
         >
@@ -58,7 +58,7 @@ function ContactRow({ contact }: { contact: Contact }) {
             <Pencil className="h-3.5 w-3.5" />
           </button>
           <button
-            onClick={() => deleteContact.mutate({ id: contact.id, business_id: contact.business_id, client_id: contact.client_id })}
+            onClick={() => deleteContact.mutate({ id: contact.id, business_id: contact.business_id })}
             className="text-muted-foreground/40 hover:text-destructive p-1"
             title="Delete contact"
           >
