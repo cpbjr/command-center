@@ -33,7 +33,7 @@ const tierConfig: Record<ServiceTier, { label: string; className: string }> = {
 const statusConfig: Record<ContractStatus, { label: string; dotClass: string }> = {
   active: { label: 'Active', dotClass: 'bg-green-500' },
   paused: { label: 'Paused', dotClass: 'bg-yellow-500' },
-  churned: { label: 'Churned', dotClass: 'bg-red-500' },
+  churned: { label: 'Completed', dotClass: 'bg-red-500' },
 }
 
 export function ClientCard({ client, onClick, taskCount, documentCount }: ClientCardProps) {

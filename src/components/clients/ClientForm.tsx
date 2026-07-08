@@ -46,6 +46,11 @@ type FormValues = {
 
 const SERVICE_TIERS: ServiceTier[] = ['Lazy Ranking', 'Core 30', 'Geographic Expansion', 'Quick Win']
 const STATUSES: ContractStatus[] = ['active', 'paused', 'churned']
+const STATUS_LABELS: Record<ContractStatus, string> = {
+  active: 'Active',
+  paused: 'Paused',
+  churned: 'Completed',
+}
 
 const emptyForm = (): FormValues => ({
   service_tier: 'Lazy Ranking',
@@ -101,7 +106,7 @@ function ClientFormFields({
           <Select value={values.status} onValueChange={(v) => set('status', v as ContractStatus)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {STATUSES.map((s) => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
+              {STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
