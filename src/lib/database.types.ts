@@ -1242,15 +1242,21 @@ export type Database = {
         Row: {
           address: string | null
           business_status: string | null
+          closed_date: string | null
           contact_status: string | null
+          contract_value: number | null
           created_at: string | null
           discovered_at: string | null
           discovery_rank: number | null
+          dropped_reason: string | null
           folder_path: string | null
           gbp_categories: Json | null
+          gbp_primary_type: string | null
           google_maps_uri: string | null
           id: string | null
           latest_score: number | null
+          lead_source: string | null
+          lifecycle_stage: Database["wpa"]["Enums"]["lifecycle_stage"] | null
           name: string | null
           notes: string | null
           phone: string | null
