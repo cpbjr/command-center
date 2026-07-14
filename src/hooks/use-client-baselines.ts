@@ -4,7 +4,7 @@ import { queryKeys } from '@/lib/query-keys'
 
 export interface ClientBaseline {
   id: number
-  client_id: number
+  contract_id: number
   snapshot_date: string
   keyword: string | null
   gtrack_avg_position: number | null
@@ -25,15 +25,15 @@ export interface ClientBaseline {
   created_at: string
 }
 
-export function useClientBaselines(clientId: number | null) {
+export function useClientBaselines(contractId: number | null) {
   return useQuery<ClientBaseline[]>({
-    queryKey: queryKeys.clientBaselines.byClient(clientId),
-    enabled: !!clientId,
+    queryKey: queryKeys.clientBaselines.byContract(contractId),
+    enabled: !!contractId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_client_baselines')
         .select('*')
-        .eq('client_id', clientId!)
+        .eq('contract_id', contractId!)
         .order('snapshot_date', { ascending: false })
 
       if (error) throw error
@@ -42,15 +42,15 @@ export function useClientBaselines(clientId: number | null) {
   })
 }
 
-export function useLatestBaseline(clientId: number | null) {
+export function useLatestBaseline(contractId: number | null) {
   return useQuery<ClientBaseline | null>({
-    queryKey: queryKeys.clientBaselines.latest(clientId),
-    enabled: !!clientId,
+    queryKey: queryKeys.clientBaselines.latest(contractId),
+    enabled: !!contractId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_client_baselines')
         .select('*')
-        .eq('client_id', clientId!)
+        .eq('contract_id', contractId!)
         .order('snapshot_date', { ascending: false })
         .limit(1)
         .maybeSingle()

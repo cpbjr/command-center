@@ -4,7 +4,7 @@ import { queryKeys } from '@/lib/query-keys'
 
 export interface GbpInsight {
   id: number
-  client_id: number
+  contract_id: number
   week_ending: string
   search_views: number | null
   maps_views: number | null
@@ -20,16 +20,16 @@ export interface GbpInsight {
 
 export type GbpInsightInsert = Omit<GbpInsight, 'id' | 'created_at'>
 
-export function useGbpInsights(clientId: number | null) {
+export function useGbpInsights(contractId: number | null) {
   return useQuery<GbpInsight[]>({
-    queryKey: queryKeys.gbpInsights.byClient(clientId),
-    enabled: !!clientId,
+    queryKey: queryKeys.gbpInsights.byContract(contractId),
+    enabled: !!contractId,
     queryFn: async () => {
       const { data, error } = await supabase
         .schema('wpa')
         .from('wpa_gbp_insights')
         .select('*')
-        .eq('client_id', clientId!)
+        .eq('contract_id', contractId!)
         .order('week_ending', { ascending: false })
 
       if (error) throw error
@@ -46,7 +46,7 @@ export function useUpsertGbpInsight() {
       const { data, error } = await supabase
         .schema('wpa')
         .from('wpa_gbp_insights')
-        .upsert(insight, { onConflict: 'client_id,week_ending' })
+        .upsert(insight, { onConflict: 'contract_id,week_ending' })
         .select()
         .single()
 
@@ -54,7 +54,7 @@ export function useUpsertGbpInsight() {
       return data as GbpInsight
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.gbpInsights.byClient(data.client_id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.gbpInsights.byContract(data.contract_id) })
     },
   })
 }

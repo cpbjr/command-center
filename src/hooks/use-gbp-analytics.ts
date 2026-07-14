@@ -13,15 +13,15 @@ export type GbpAnalytics = Omit<
 
 export type GbpAnalyticsInsert = Omit<GbpAnalytics, 'id' | 'created_at'>
 
-export function useGbpAnalytics(clientId: number | null, periodStart: string, periodEnd: string) {
+export function useGbpAnalytics(contractId: number | null, periodStart: string, periodEnd: string) {
   return useQuery<GbpAnalytics | null>({
-    queryKey: queryKeys.gbpAnalytics.forPeriod(clientId, periodStart, periodEnd),
-    enabled: !!clientId && !!periodStart && !!periodEnd,
+    queryKey: queryKeys.gbpAnalytics.forPeriod(contractId, periodStart, periodEnd),
+    enabled: !!contractId && !!periodStart && !!periodEnd,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('gbp_analytics')
         .select('*')
-        .eq('client_id', clientId!)
+        .eq('contract_id', contractId!)
         .gte('period_start', periodStart)
         .lte('period_start', periodEnd)
         .order('period_start', { ascending: false })
@@ -34,15 +34,15 @@ export function useGbpAnalytics(clientId: number | null, periodStart: string, pe
   })
 }
 
-export function useGbpAnalyticsPrior(clientId: number | null, periodStart: string) {
+export function useGbpAnalyticsPrior(contractId: number | null, periodStart: string) {
   return useQuery<GbpAnalytics | null>({
-    queryKey: queryKeys.gbpAnalytics.prior(clientId, periodStart),
-    enabled: !!clientId && !!periodStart,
+    queryKey: queryKeys.gbpAnalytics.prior(contractId, periodStart),
+    enabled: !!contractId && !!periodStart,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('gbp_analytics')
         .select('*')
-        .eq('client_id', clientId!)
+        .eq('contract_id', contractId!)
         .lt('period_start', periodStart)
         .order('period_start', { ascending: false })
         .limit(1)
@@ -69,8 +69,8 @@ export function useAddGbpAnalytics() {
       return data as GbpAnalytics
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.gbpAnalytics.byClient(variables.client_id) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.gbpAnalytics.priorByClient(variables.client_id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.gbpAnalytics.byContract(variables.contract_id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.gbpAnalytics.priorByContract(variables.contract_id) })
     },
   })
 }
