@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { AuthGate } from "@/components/auth/AuthGate"
 import AppShell from "@/components/layout/AppShell"
 import LeadsPage from "@/pages/LeadsPage"
 import ClientsPage from "@/pages/ClientsPage"
@@ -21,6 +22,7 @@ const queryClient = new QueryClient({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthGate>
       <BrowserRouter>
         <Routes>
           <Route element={<AppShell />}>
@@ -34,6 +36,7 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      </AuthGate>
     </QueryClientProvider>
   )
 }

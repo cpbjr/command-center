@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { TaskColumn } from './TaskColumn'
-import type { Task, TaskStatus, TaskCategory } from '@/hooks/use-tasks'
+import type { Task, TaskStatus, TaskCategory, TaskAssignee } from '@/hooks/use-tasks'
+import { cn } from '@/lib/utils'
 
 interface TaskBoardProps {
   tasks: Task[]
@@ -22,17 +23,26 @@ const COLUMNS: { status: TaskStatus; label: string }[] = [
   { status: 'todo', label: 'To Do' },
   { status: 'in_progress', label: 'In Progress' },
   { status: 'blocked', label: 'Blocked' },
+  { status: 'review', label: 'Review' },
   { status: 'done', label: 'Done' },
 ]
 
 const CATEGORIES: TaskCategory[] = ['Client Work', 'WPA Own', 'Infrastructure', 'Marketing', 'Backlog']
 
+const ASSIGNEE_FILTERS: { value: TaskAssignee | 'all'; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'human', label: 'Mine' },
+  { value: 'bob', label: 'Bob' },
+]
+
 export function TaskBoard({ tasks, onAdd, onEdit }: TaskBoardProps) {
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [assigneeFilter, setAssigneeFilter] = useState<TaskAssignee | 'all'>('all')
 
-  const filtered = categoryFilter === 'all'
-    ? tasks
-    : tasks.filter((t) => t.category === categoryFilter)
+  const filtered = tasks.filter((t) =>
+    (categoryFilter === 'all' || t.category === categoryFilter) &&
+    (assigneeFilter === 'all' || t.assigned_to === assigneeFilter)
+  )
 
   function tasksForStatus(status: TaskStatus) {
     return filtered.filter((t) => t.status === status)
@@ -42,17 +52,37 @@ export function TaskBoard({ tasks, onAdd, onEdit }: TaskBoardProps) {
     <div className="relative flex flex-col gap-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-3">
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All categories" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
-            {CATEGORIES.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
+        <div className="flex items-center gap-3">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All categories</SelectItem>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Assignee filter */}
+          <div className="flex items-center rounded-md border border-wpa-border/60 p-0.5">
+            {ASSIGNEE_FILTERS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setAssigneeFilter(value)}
+                className={cn(
+                  'px-2.5 py-1 text-xs rounded-sm transition-colors',
+                  assigneeFilter === value
+                    ? 'bg-pine-mid text-warmwhite font-medium'
+                    : 'text-text-tertiary hover:text-text-secondary'
+                )}
+              >
+                {label}
+              </button>
             ))}
-          </SelectContent>
-        </Select>
+          </div>
+        </div>
 
         <Button size="sm" onClick={onAdd} className="hidden sm:flex gap-1.5">
           <PlusIcon className="size-4" />
@@ -60,8 +90,8 @@ export function TaskBoard({ tasks, onAdd, onEdit }: TaskBoardProps) {
         </Button>
       </div>
 
-      {/* Desktop: 4-column board */}
-      <div className="hidden sm:grid grid-cols-4 gap-4 pb-4">
+      {/* Desktop: 5-column board */}
+      <div className="hidden sm:grid grid-cols-5 gap-4 pb-4">
         {COLUMNS.map(({ status, label }) => (
           <TaskColumn
             key={status}

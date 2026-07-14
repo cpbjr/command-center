@@ -1,5 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+
+// Business rows are read under all of these keys (Leads page + Discovery page),
+// so every business mutation must invalidate the full set.
+function invalidateBusinessCaches(queryClient: QueryClient) {
+  for (const key of ['businesses', 'discovery-recent', 'discovery-search', 'discovery-stats']) {
+    queryClient.invalidateQueries({ queryKey: [key] })
+  }
+}
 
 export interface Business {
   id: string
@@ -163,7 +171,7 @@ export function useUpdateBusinessStatus() {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['businesses'] })
+      invalidateBusinessCaches(queryClient)
     },
   })
 }
@@ -181,10 +189,7 @@ export function useUpdateBusinessNotes() {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['businesses'] })
-      queryClient.invalidateQueries({ queryKey: ['discovery'] })
-      queryClient.invalidateQueries({ queryKey: ['discovery-recent'] })
-      queryClient.invalidateQueries({ queryKey: ['discovery-search'] })
+      invalidateBusinessCaches(queryClient)
     },
   })
 }
@@ -202,10 +207,7 @@ export function useUpdateBusinessFolderPath() {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['businesses'] })
-      queryClient.invalidateQueries({ queryKey: ['discovery'] })
-      queryClient.invalidateQueries({ queryKey: ['discovery-recent'] })
-      queryClient.invalidateQueries({ queryKey: ['discovery-search'] })
+      invalidateBusinessCaches(queryClient)
     },
   })
 }
@@ -280,7 +282,7 @@ export function useConvertToClient() {
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['businesses'] })
+      invalidateBusinessCaches(queryClient)
       queryClient.invalidateQueries({ queryKey: ['contracts'] })
     },
   })
@@ -297,7 +299,7 @@ export function useDeleteBusiness() {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['businesses'] })
+      invalidateBusinessCaches(queryClient)
       queryClient.invalidateQueries({ queryKey: ['businesses-simple'] })
     },
   })

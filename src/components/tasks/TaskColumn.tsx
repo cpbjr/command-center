@@ -33,6 +33,12 @@ const COLUMN_CONFIG: Record<TaskStatus, {
     bg: 'bg-bark/[0.04]',
     countColor: 'text-bark/60',
   },
+  review: {
+    topBorder: 'border-t-2 border-ridge',
+    labelColor: 'text-ridge',
+    bg: 'bg-ridge/[0.04]',
+    countColor: 'text-ridge/60',
+  },
   done: {
     topBorder: 'border-t border-stone',
     labelColor: 'text-stone',

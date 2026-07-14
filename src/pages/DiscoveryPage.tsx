@@ -98,7 +98,7 @@ export default function DiscoveryPage() {
         <TelescopeIcon className="size-6 text-pine-deep shrink-0" />
         <div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Businesses Bud discovered and audited overnight
+            Businesses Bob discovered and audited overnight
           </p>
         </div>
       </div>
@@ -171,7 +171,7 @@ export default function DiscoveryPage() {
           <p className="text-sm text-muted-foreground mt-1">
             {isSearching
               ? 'Try a different search term.'
-              : 'Bud hasn\'t discovered any businesses yet.'}
+              : 'Bob hasn\'t discovered any businesses yet.'}
           </p>
         </div>
       )}

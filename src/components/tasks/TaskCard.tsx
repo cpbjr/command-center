@@ -1,3 +1,4 @@
+import { Bot } from 'lucide-react'
 import { useUpdateTask } from '@/hooks/use-tasks'
 import type { Task, TaskStatus } from '@/hooks/use-tasks'
 import { cn } from '@/lib/utils'
@@ -36,6 +37,7 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
   { value: 'todo',        label: 'To Do' },
   { value: 'in_progress', label: 'In Progress' },
   { value: 'blocked',     label: 'Blocked' },
+  { value: 'review',      label: 'Review' },
   { value: 'done',        label: 'Done' },
 ]
 
@@ -99,6 +101,17 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
           <span className="font-mono text-[10px] tracking-wider text-text-tertiary uppercase">
             {CATEGORY_MONO[task.category] ?? task.category}
           </span>
+
+          {/* Bob assignment badge */}
+          {task.assigned_to === 'bob' && (
+            <span
+              className="flex items-center gap-0.5 font-mono text-[10px] tracking-wider text-pine-forest uppercase"
+              title="Assigned to Bob"
+            >
+              <Bot className="h-3 w-3" />
+              bob
+            </span>
+          )}
 
           {/* Client name */}
           {(task.wpa_contracts as any)?.wpa_businesses?.name && (
@@ -168,6 +181,11 @@ export function TaskCard({ task, onEdit }: TaskCardProps) {
       )}>
         {task.title}
       </span>
+
+      {/* Bob assignment badge */}
+      {task.assigned_to === 'bob' && (
+        <Bot className="h-3 w-3 shrink-0 self-center text-pine-forest" aria-label="Assigned to Bob" />
+      )}
 
       {/* Category — mono text, no chip */}
       <span className="shrink-0 font-mono text-[10px] tracking-wider text-text-tertiary uppercase self-center">
