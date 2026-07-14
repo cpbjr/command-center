@@ -160,30 +160,6 @@ export function useBusinessAudit(businessId: string | null) {
   })
 }
 
-export function useUpdateBusinessStatus() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({
-      id,
-      contact_status,
-    }: {
-      id: string
-      contact_status: Business['contact_status']
-    }) => {
-      const { error } = await supabase
-        .from('wpa_businesses')
-        .update({ contact_status })
-        .eq('id', id)
-
-      if (error) throw error
-    },
-    onSuccess: () => {
-      invalidateBusinessCaches(queryClient)
-    },
-  })
-}
-
 export function useMoveToStage() {
   const queryClient = useQueryClient()
   return useMutation({
