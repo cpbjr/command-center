@@ -37,8 +37,12 @@ PATCH /rest/v1/wpa_tasks?id=eq.<id>
 Use the RPCs (all take optional trailing `p_actor TEXT DEFAULT 'bob'`, so Bob can omit it):
 
 - `POST /rest/v1/rpc/append_activity` — `{p_business_id, p_type, p_summary, p_occurred_at?}` for any touch: call, email, meeting, text, action, note.
-- `POST /rest/v1/rpc/move_to_stage` — `{p_business_id, p_stage}` (stage ∈ identified/new/prospect/qualified/proposal/lead/client/churned). Logs the stage change and syncs the legacy `contact_status` mirror automatically.
-- `POST /rest/v1/rpc/convert_to_client` — `{p_business_id, p_service_tier, p_monthly_revenue?}`.
+- `POST /rest/v1/rpc/move_to_stage` — `{p_business_id, p_stage}` where stage ∈ `identified / new_prospect / lead / client / dropped`. Logs the stage change.
+  - To drop a lead **with a reason**: first `PATCH /rest/v1/wpa_businesses?id=eq.<id>` `{"dropped_reason": "declined|not_a_fit|no_response"}`, then `move_to_stage` with `p_stage: "dropped"`. The reason is optional (nullable) — a bare `move_to_stage` to `dropped` is fine if there's no reason.
+- `POST /rest/v1/rpc/convert_to_client` — `{p_business_id, p_service_tier, p_monthly_revenue?}`. Sets stage `client` and writes the contract row.
+- `POST /rest/v1/rpc/end_engagement` — `{p_business_id, p_close_reason}` where reason ∈ `work_completed | parted_ways`. Ends a **client** relationship: sets stage `relationship_ended` and stamps `close_reason`/`closed_at` on the business's current contract. Do **not** use `move_to_stage` for this — it would set the stage but leave the contract unclosed.
+
+Stages `client` and `relationship_ended` are reached **only** via `convert_to_client` / `end_engagement` (they write companion contract data), never via a bare `move_to_stage`. Do not read or write the old `contact_status` column — it has been dropped.
 
 ## Change polling
 
