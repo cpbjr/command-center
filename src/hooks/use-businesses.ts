@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tansta
 import { supabase } from '@/lib/supabase'
 import { queryKeys, businessCacheRoots } from '@/lib/query-keys'
 import type { LifecycleStage } from '@/lib/lifecycle'
+import type { Database } from '@/lib/database.types'
 
 // Business rows are read under all of these keys (Leads page + Discovery page),
 // so every business mutation must invalidate the full set.
@@ -49,7 +50,7 @@ export interface BusinessAudit {
 export interface UseBusinessesOptions {
   page: number
   pageSize: number
-  statusFilter: string[]
+  stageFilter: LifecycleStage[]
   scoreRange: [number, number]
   search: string
   category: string
@@ -62,7 +63,7 @@ export interface BusinessesResult {
 }
 
 export function useBusinesses(options: UseBusinessesOptions) {
-  const { page, pageSize, statusFilter, scoreRange, search, category, noWebsite } = options
+  const { page, pageSize, stageFilter, scoreRange, search, category, noWebsite } = options
   const from = page * pageSize
   const to = from + pageSize - 1
 
@@ -75,8 +76,14 @@ export function useBusinesses(options: UseBusinessesOptions) {
         .order('latest_score', { ascending: false, nullsFirst: false })
         .range(from, to)
 
-      if (statusFilter.length > 0) {
-        query = query.in('contact_status', statusFilter)
+      if (stageFilter.length > 0) {
+        // Cast: the DB enum still carries the pre-remap legacy values (gated
+        // Task 5.9) so the generated Supabase types don't yet include the
+        // final vocabulary here. The live enum already accepts these values.
+        query = query.in(
+          'lifecycle_stage',
+          stageFilter as unknown as Database['wpa']['Enums']['lifecycle_stage'][]
+        )
       }
 
       if (search.trim()) {
