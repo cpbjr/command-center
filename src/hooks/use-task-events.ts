@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { queryKeys } from '@/lib/query-keys'
 
 export type TaskEventKind = 'comment' | 'status_change' | 'assignment' | 'agent_run'
 
@@ -15,7 +16,7 @@ export interface TaskEvent {
 
 export function useTaskEvents(taskId: number | null) {
   return useQuery<TaskEvent[]>({
-    queryKey: ['task-events', taskId],
+    queryKey: queryKeys.taskEvents.byTask(taskId),
     enabled: !!taskId,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -52,7 +53,7 @@ export function useAddTaskEvent() {
       return data as TaskEvent
     },
     onSuccess: (_data, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['task-events', vars.task_id] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.taskEvents.byTask(vars.task_id) })
     },
   })
 }

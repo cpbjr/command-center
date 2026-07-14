@@ -1,31 +1,28 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import type { Database } from '@/lib/database.types'
+import { queryKeys } from '@/lib/query-keys'
+import { PRIORITY_ORDER } from '@/lib/constants'
+
+type TaskRow = Database['wpa']['Tables']['wpa_tasks']['Row']
 
 export type TaskStatus = 'todo' | 'in_progress' | 'blocked' | 'review' | 'done'
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type TaskCategory = 'Client Work' | 'WPA Own' | 'Infrastructure' | 'Marketing' | 'Backlog'
 export type TaskAssignee = 'human' | 'bob'
 
-export interface Task {
-  id: number
-  title: string
-  description: string | null
+// Base columns from the generated row type, with domain enums narrowed and the
+// selected join relations (wpa_contracts → wpa_businesses, wpa_businesses) added.
+export type Task = Omit<
+  TaskRow,
+  'category' | 'status' | 'priority' | 'assigned_to' | 'is_template' | 'tags'
+> & {
   category: TaskCategory
   status: TaskStatus
   priority: TaskPriority
-  contract_id: number | null
-  business_id: string | null
-  project_id: number | null
-  due_date: string | null
-  completed_at: string | null
-  created_at: string
-  updated_at: string
-  is_template: boolean
-  recurrence_rule: string | null
-  last_generated_at: string | null
-  tags: string[]
-  notes: string | null
   assigned_to: TaskAssignee
+  is_template: boolean
+  tags: string[]
   wpa_contracts: { id: number; wpa_businesses: { name: string } | null } | null
   wpa_businesses: { name: string } | null
 }
@@ -50,16 +47,9 @@ export type TaskInsert = {
 
 export type TaskUpdate = Partial<TaskInsert> & { id: number }
 
-const PRIORITY_ORDER: Record<TaskPriority, number> = {
-  urgent: 0,
-  high: 1,
-  medium: 2,
-  low: 3,
-}
-
 export function useTasks(categoryFilter?: string, contractId?: number, businessId?: string) {
   return useQuery<Task[]>({
-    queryKey: ['tasks', categoryFilter, contractId, businessId],
+    queryKey: queryKeys.tasks.list(categoryFilter, contractId, businessId),
     queryFn: async () => {
       let query = supabase
         .from('wpa_tasks')
@@ -108,7 +98,7 @@ export function useCreateTask() {
       return data as Task
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all })
     },
   })
 }
@@ -138,7 +128,7 @@ export function useUpdateTask() {
       return data as Task
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all })
     },
   })
 }
@@ -156,7 +146,7 @@ export function useDeleteTask() {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all })
     },
   })
 }
@@ -182,7 +172,7 @@ function shouldGenerate(t: Task): boolean {
 
 export function useTemplateTasks() {
   return useQuery<Task[]>({
-    queryKey: ['tasks', 'templates'],
+    queryKey: queryKeys.tasks.templates(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_tasks')
@@ -192,6 +182,33 @@ export function useTemplateTasks() {
 
       if (error) throw error
       return (data as Task[]) ?? []
+    },
+  })
+}
+
+// Open (non-done) task counts grouped by contract, for the Clients board badges.
+// Selects only contract_id for contract-linked, non-template, non-done tasks so
+// we don't fetch every task row with its joins just to tally counts.
+export function useOpenTaskCountsByContract() {
+  return useQuery<Record<number, number>>({
+    queryKey: queryKeys.tasks.openCountsByContract(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('wpa_tasks')
+        .select('contract_id')
+        .eq('is_template', false)
+        .neq('status', 'done')
+        .not('contract_id', 'is', null)
+
+      if (error) throw error
+
+      const counts: Record<number, number> = {}
+      for (const row of data ?? []) {
+        if (row.contract_id != null) {
+          counts[row.contract_id] = (counts[row.contract_id] ?? 0) + 1
+        }
+      }
+      return counts
     },
   })
 }
@@ -213,7 +230,7 @@ export function useGenerateFromTemplates() {
       let count = 0
 
       for (const template of tasksToGenerate) {
-        const newTask: Record<string, unknown> = {
+        const newTask: TaskInsert = {
           title: template.title,
           description: template.description,
           category: template.category,
@@ -247,7 +264,7 @@ export function useGenerateFromTemplates() {
       return count
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all })
     },
   })
 }

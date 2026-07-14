@@ -1,32 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import type { Database } from '@/lib/database.types'
+import { queryKeys } from '@/lib/query-keys'
 
-export interface GbpAnalytics {
-  id: number
-  client_id: number
+// Generated gbp_analytics row with period_type narrowed to its domain union.
+export type GbpAnalytics = Omit<
+  Database['wpa']['Tables']['gbp_analytics']['Row'],
+  'period_type'
+> & {
   period_type: 'week' | 'month'
-  period_start: string
-  period_end: string
-  total_searches: number | null
-  direct_searches: number | null
-  discovery_searches: number | null
-  calls: number | null
-  website_clicks: number | null
-  direction_requests: number | null
-  photo_views: number | null
-  review_count: number | null
-  avg_rating: number | null
-  new_reviews: number | null
-  citation_count: number | null
-  notes: string | null
-  created_at: string
 }
 
 export type GbpAnalyticsInsert = Omit<GbpAnalytics, 'id' | 'created_at'>
 
 export function useGbpAnalytics(clientId: number | null, periodStart: string, periodEnd: string) {
   return useQuery<GbpAnalytics | null>({
-    queryKey: ['gbp-analytics', clientId, periodStart, periodEnd],
+    queryKey: queryKeys.gbpAnalytics.forPeriod(clientId, periodStart, periodEnd),
     enabled: !!clientId && !!periodStart && !!periodEnd,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -47,7 +36,7 @@ export function useGbpAnalytics(clientId: number | null, periodStart: string, pe
 
 export function useGbpAnalyticsPrior(clientId: number | null, periodStart: string) {
   return useQuery<GbpAnalytics | null>({
-    queryKey: ['gbp-analytics-prior', clientId, periodStart],
+    queryKey: queryKeys.gbpAnalytics.prior(clientId, periodStart),
     enabled: !!clientId && !!periodStart,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -80,8 +69,8 @@ export function useAddGbpAnalytics() {
       return data as GbpAnalytics
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['gbp-analytics', variables.client_id] })
-      queryClient.invalidateQueries({ queryKey: ['gbp-analytics-prior', variables.client_id] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.gbpAnalytics.byClient(variables.client_id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.gbpAnalytics.priorByClient(variables.client_id) })
     },
   })
 }

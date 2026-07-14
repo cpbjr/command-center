@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { ClientCard, statusConfig } from './ClientCard'
 import { ClientForm } from './ClientForm'
 import { useContracts } from '@/hooks/use-contracts'
-import { useTasks } from '@/hooks/use-tasks'
+import { useOpenTaskCountsByContract } from '@/hooks/use-tasks'
 import type { Contract, ContractStatus } from '@/hooks/use-contracts'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +11,7 @@ const FILTER_TABS: (ContractStatus | 'all')[] = ['active', 'paused', 'churned', 
 
 export function ClientBoard() {
   const { data: clients, isLoading, error } = useContracts()
-  const { data: allTasks = [] } = useTasks()
+  const { data: taskCountsByClient = {} } = useOpenTaskCountsByContract()
   const [formOpen, setFormOpen] = useState(false)
   const [selectedClient, setSelectedClient] = useState<Contract | null>(null)
   const [statusFilter, setStatusFilter] = useState<ContractStatus | 'all'>('active')
@@ -20,16 +20,6 @@ export function ClientBoard() {
     if (statusFilter === 'all') return clients
     return clients?.filter((c) => c.status === statusFilter)
   }, [clients, statusFilter])
-
-  const taskCountsByClient = useMemo(() => {
-    const counts: Record<number, number> = {}
-    for (const task of allTasks) {
-      if (task.contract_id != null && task.status !== 'done') {
-        counts[task.contract_id] = (counts[task.contract_id] ?? 0) + 1
-      }
-    }
-    return counts
-  }, [allTasks])
 
   function handleAdd() {
     setSelectedClient(null)

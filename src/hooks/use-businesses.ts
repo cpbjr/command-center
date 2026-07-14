@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { queryKeys, businessCacheRoots } from '@/lib/query-keys'
 
 // Business rows are read under all of these keys (Leads page + Discovery page),
 // so every business mutation must invalidate the full set.
 function invalidateBusinessCaches(queryClient: QueryClient) {
-  for (const key of ['businesses', 'discovery-recent', 'discovery-search', 'discovery-stats']) {
-    queryClient.invalidateQueries({ queryKey: [key] })
+  for (const key of businessCacheRoots) {
+    queryClient.invalidateQueries({ queryKey: key })
   }
 }
 
@@ -63,7 +64,7 @@ export function useBusinesses(options: UseBusinessesOptions) {
   const to = from + pageSize - 1
 
   return useQuery<BusinessesResult>({
-    queryKey: ['businesses', options],
+    queryKey: queryKeys.businesses.list(options),
     queryFn: async () => {
       let query = supabase
         .from('wpa_businesses_with_score')
@@ -112,7 +113,7 @@ export function useBusinesses(options: UseBusinessesOptions) {
 
 export function useBusinessCategories() {
   return useQuery<string[]>({
-    queryKey: ['business-categories'],
+    queryKey: queryKeys.businesses.categories(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_businesses_with_score')
@@ -122,10 +123,14 @@ export function useBusinessCategories() {
       if (error) throw error
 
       const unique = Array.from(
-        new Set((data ?? []).map((row: { search_query: string }) => row.search_query).filter(Boolean))
+        new Set(
+          (data ?? [])
+            .map((row) => row.search_query)
+            .filter((q): q is string => Boolean(q))
+        )
       ).sort()
 
-      return unique as string[]
+      return unique
     },
     staleTime: 5 * 60 * 1000,
   })
@@ -133,7 +138,7 @@ export function useBusinessCategories() {
 
 export function useBusinessAudit(businessId: string | null) {
   return useQuery<BusinessAudit | null>({
-    queryKey: ['business-audit', businessId],
+    queryKey: queryKeys.businesses.audit(businessId),
     queryFn: async () => {
       if (!businessId) return null
 
@@ -231,33 +236,32 @@ export function useRequestAudit() {
       if (error) throw error
     },
     onSuccess: (_data, businessId) => {
-      queryClient.invalidateQueries({ queryKey: ['business-audit', businessId] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.audit(businessId) })
     },
   })
 }
 
-export function useBusinessesSimple() {
+export function useBusinessesSimple(search = '') {
+  const trimmed = search.trim()
   return useQuery<{ id: string; name: string }[]>({
-    queryKey: ['businesses-simple'],
+    queryKey: queryKeys.businesses.simple(trimmed),
     queryFn: async () => {
-      const PAGE = 1000
-      const all: { id: string; name: string }[] = []
-      let from = 0
-      while (true) {
-        const { data, error } = await supabase
-          .from('wpa_businesses')
-          .select('id, name')
-          .order('name', { ascending: true })
-          .range(from, from + PAGE - 1)
-        if (error) throw error
-        if (!data || data.length === 0) break
-        all.push(...(data as { id: string; name: string }[]))
-        if (data.length < PAGE) break
-        from += PAGE
+      let query = supabase
+        .from('wpa_businesses')
+        .select('id, name')
+        .order('name', { ascending: true })
+        .limit(20)
+
+      if (trimmed) {
+        query = query.ilike('name', `%${trimmed}%`)
       }
-      return all
+
+      const { data, error } = await query
+      if (error) throw error
+      return (data as { id: string; name: string }[]) ?? []
     },
     staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
   })
 }
 
@@ -283,7 +287,7 @@ export function useConvertToClient() {
     },
     onSuccess: () => {
       invalidateBusinessCaches(queryClient)
-      queryClient.invalidateQueries({ queryKey: ['contracts'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contracts.all })
     },
   })
 }
@@ -300,7 +304,7 @@ export function useDeleteBusiness() {
     },
     onSuccess: () => {
       invalidateBusinessCaches(queryClient)
-      queryClient.invalidateQueries({ queryKey: ['businesses-simple'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.simpleRoot })
     },
   })
 }

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { queryKeys } from '@/lib/query-keys'
 
 export interface GbpInsight {
   id: number
@@ -21,7 +22,7 @@ export type GbpInsightInsert = Omit<GbpInsight, 'id' | 'created_at'>
 
 export function useGbpInsights(clientId: number | null) {
   return useQuery<GbpInsight[]>({
-    queryKey: ['gbp-insights', clientId],
+    queryKey: queryKeys.gbpInsights.byClient(clientId),
     enabled: !!clientId,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -53,7 +54,7 @@ export function useUpsertGbpInsight() {
       return data as GbpInsight
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['gbp-insights', data.client_id] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.gbpInsights.byClient(data.client_id) })
     },
   })
 }

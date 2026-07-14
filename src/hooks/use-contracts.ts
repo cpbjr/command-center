@@ -1,30 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import type { Database } from '@/lib/database.types'
+import { queryKeys } from '@/lib/query-keys'
+
+type ContractRow = Database['wpa']['Tables']['wpa_contracts']['Row']
+type BusinessRow = Database['wpa']['Tables']['wpa_businesses']['Row']
 
 export type ServiceTier = 'Lazy Ranking' | 'Core 30' | 'Geographic Expansion' | 'Quick Win'
 export type ContractStatus = 'active' | 'paused' | 'churned'
 
-export interface ContractBusiness {
-  name: string
-  website_url: string | null
-  phone: string | null
-  address: string | null
-}
+export type ContractBusiness = Pick<
+  BusinessRow,
+  'name' | 'website_url' | 'phone' | 'address'
+>
 
-export interface Contract {
-  id: number
-  business_id: string
+// Generated contract row with the domain enums narrowed and the selected
+// wpa_businesses join added.
+export type Contract = Omit<ContractRow, 'service_tier' | 'status'> & {
   service_tier: ServiceTier
-  monthly_revenue: number
-  current_phase: string
-  next_action: string
   status: ContractStatus
-  start_date: string
-  end_date: string | null
-  notes: string
-  folder_path: string | null
-  created_at: string
-  updated_at: string
   wpa_businesses?: ContractBusiness
 }
 
@@ -32,7 +26,7 @@ export type ContractUpdate = Partial<Omit<Contract, 'id' | 'business_id' | 'crea
 
 export function useContracts() {
   return useQuery<Contract[]>({
-    queryKey: ['contracts'],
+    queryKey: queryKeys.contracts.all,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_contracts')
@@ -58,7 +52,7 @@ export function useUpdateContract() {
       return data as Contract
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contracts'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contracts.all })
     },
   })
 }

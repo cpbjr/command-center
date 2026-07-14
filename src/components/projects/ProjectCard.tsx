@@ -79,8 +79,8 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <CardTitle className="text-base text-text-primary">{project.name}</CardTitle>
-            {(project.wpa_contracts as any)?.wpa_businesses?.name && (
-              <p className="text-xs text-text-tertiary">{(project.wpa_contracts as any).wpa_businesses.name}</p>
+            {project.wpa_contracts?.wpa_businesses?.name && (
+              <p className="text-xs text-text-tertiary">{project.wpa_contracts.wpa_businesses!.name}</p>
             )}
           </div>
           <div className="flex flex-wrap justify-end gap-1">

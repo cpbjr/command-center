@@ -1,15 +1,16 @@
 import { cn } from '@/lib/utils'
+import { scoreTier } from '@/lib/score'
 
 interface ScoreBarProps {
   score: number | null
   className?: string
 }
 
-function getBarColor(score: number): string {
-  if (score <= 1) return 'bg-red-500'
-  if (score <= 3) return 'bg-amber-500'
-  return 'bg-green-500'
-}
+const BAR_COLORS = {
+  low: 'bg-red-500',
+  mid: 'bg-amber-500',
+  high: 'bg-green-500',
+} as const
 
 export function ScoreBar({ score, className }: ScoreBarProps) {
   if (score === null || score === undefined) {
@@ -22,7 +23,7 @@ export function ScoreBar({ score, className }: ScoreBarProps) {
   }
 
   const pct = Math.min(Math.max((score / 5) * 100, 0), 100)
-  const colorClass = getBarColor(score)
+  const colorClass = BAR_COLORS[scoreTier(score)]
 
   return (
     <div className={cn('flex items-center gap-1.5', className)}>

@@ -111,7 +111,7 @@ export default function TasksPage() {
         <div className="space-y-6">
           {Object.entries(
             tasks.reduce<Record<string, Task[]>>((acc, task) => {
-              const key = (task.wpa_contracts as any)?.wpa_businesses?.name ?? 'Unassigned'
+              const key = task.wpa_contracts?.wpa_businesses?.name ?? 'Unassigned'
               ;(acc[key] ??= []).push(task)
               return acc
             }, {})
