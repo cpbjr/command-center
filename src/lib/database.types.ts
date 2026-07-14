@@ -224,6 +224,7 @@ export type Database = {
           created_at: string
           discovered_at: string
           discovery_rank: number | null
+          dropped_reason: string | null
           folder_path: string | null
           gbp_categories: Json | null
           gbp_primary_type: string
@@ -251,6 +252,7 @@ export type Database = {
           created_at?: string
           discovered_at?: string
           discovery_rank?: number | null
+          dropped_reason?: string | null
           folder_path?: string | null
           gbp_categories?: Json | null
           gbp_primary_type?: string
@@ -278,6 +280,7 @@ export type Database = {
           created_at?: string
           discovered_at?: string
           discovery_rank?: number | null
+          dropped_reason?: string | null
           folder_path?: string | null
           gbp_categories?: Json | null
           gbp_primary_type?: string
@@ -470,6 +473,8 @@ export type Database = {
       wpa_contracts: {
         Row: {
           business_id: string
+          close_reason: string | null
+          closed_at: string | null
           created_at: string
           current_phase: string
           end_date: string | null
@@ -485,6 +490,8 @@ export type Database = {
         }
         Insert: {
           business_id: string
+          close_reason?: string | null
+          closed_at?: string | null
           created_at?: string
           current_phase?: string
           end_date?: string | null
@@ -500,6 +507,8 @@ export type Database = {
         }
         Update: {
           business_id?: string
+          close_reason?: string | null
+          closed_at?: string | null
           created_at?: string
           current_phase?: string
           end_date?: string | null
@@ -1294,6 +1303,38 @@ export type Database = {
         }
         Returns: {
           business_id: string
+          close_reason: string | null
+          closed_at: string | null
+          created_at: string
+          current_phase: string
+          end_date: string | null
+          folder_path: string | null
+          id: number
+          monthly_revenue: number
+          next_action: string
+          notes: string
+          service_tier: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wpa_contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      end_engagement: {
+        Args: {
+          p_actor?: string
+          p_business_id: string
+          p_close_reason: string
+        }
+        Returns: {
+          business_id: string
+          close_reason: string | null
+          closed_at: string | null
           created_at: string
           current_phase: string
           end_date: string | null
@@ -1325,6 +1366,7 @@ export type Database = {
           created_at: string
           discovered_at: string
           discovery_rank: number | null
+          dropped_reason: string | null
           folder_path: string | null
           gbp_categories: Json | null
           gbp_primary_type: string
@@ -1365,6 +1407,7 @@ export type Database = {
         | "prospect"
         | "qualified"
         | "proposal"
+        | "dropped"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1501,6 +1544,7 @@ export const Constants = {
         "prospect",
         "qualified",
         "proposal",
+        "dropped",
       ],
     },
   },
