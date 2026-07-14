@@ -24,7 +24,7 @@ import {
 } from '@/hooks/use-gbp-analytics'
 
 interface AnalyticsWidgetProps {
-  clientId: number
+  contractId: number
   clientName: string
 }
 
@@ -127,7 +127,7 @@ function StatTile({
 // ── Inline add-data form ──────────────────────────────────────────────────────
 
 interface AddDataFormProps {
-  clientId: number
+  contractId: number
   periodType: 'week' | 'month'
   periodStart: string
   periodEnd: string
@@ -210,7 +210,7 @@ function LabeledInput({
   )
 }
 
-function AddDataForm({ clientId, periodType, periodStart, periodEnd, onSaved, onCancel }: AddDataFormProps) {
+function AddDataForm({ contractId, periodType, periodStart, periodEnd, onSaved, onCancel }: AddDataFormProps) {
   const [form, setForm] = useState<FormState>(emptyForm())
   const addAnalytics = useAddGbpAnalytics()
 
@@ -222,7 +222,7 @@ function AddDataForm({ clientId, periodType, periodStart, periodEnd, onSaved, on
     e.preventDefault()
 
     const payload: GbpAnalyticsInsert = {
-      client_id: clientId,
+      contract_id: contractId,
       period_type: periodType,
       period_start: periodStart,
       period_end: periodEnd,
@@ -469,15 +469,15 @@ function ReportDialog({
 
 // ── Main widget ───────────────────────────────────────────────────────────────
 
-export function AnalyticsWidget({ clientId, clientName }: AnalyticsWidgetProps) {
+export function AnalyticsWidget({ contractId, clientName }: AnalyticsWidgetProps) {
   const [period, setPeriod] = useState<PeriodOption>('this-week')
   const [showForm, setShowForm] = useState(false)
   const [showReport, setShowReport] = useState(false)
 
   const range = getPeriodRange(period)
 
-  const { data: current, isLoading } = useGbpAnalytics(clientId, range.periodStart, range.periodEnd)
-  const { data: prior } = useGbpAnalyticsPrior(clientId, range.periodStart)
+  const { data: current, isLoading } = useGbpAnalytics(contractId, range.periodStart, range.periodEnd)
+  const { data: prior } = useGbpAnalyticsPrior(contractId, range.periodStart)
 
   const customerActions =
     (current?.calls ?? 0) + (current?.website_clicks ?? 0) + (current?.direction_requests ?? 0)
@@ -560,7 +560,7 @@ export function AnalyticsWidget({ clientId, clientName }: AnalyticsWidgetProps) 
       {/* Inline form */}
       {showForm && (
         <AddDataForm
-          clientId={clientId}
+          contractId={contractId}
           periodType={range.periodType}
           periodStart={range.periodStart}
           periodEnd={range.periodEnd}

@@ -10,15 +10,15 @@ import {
 import { formatDate } from '@/lib/format'
 
 interface GbpScoreWidgetProps {
-  clientId: number
+  contractId: number
 }
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
-export function GbpScoreWidget({ clientId }: GbpScoreWidgetProps) {
-  const { data: scores = [] } = useGbpScores(clientId)
+export function GbpScoreWidget({ contractId }: GbpScoreWidgetProps) {
+  const { data: scores = [] } = useGbpScores(contractId)
   const addScore = useAddGbpScore()
 
   const [showForm, setShowForm] = useState(false)
@@ -42,7 +42,7 @@ export function GbpScoreWidget({ clientId }: GbpScoreWidgetProps) {
     if (isNaN(val) || val < 0 || val > 10) return
 
     const payload: GbpScoreInsert = {
-      client_id: clientId,
+      contract_id: contractId,
       score: val,
       notes: notes.trim() || null,
       recorded_at: date || todayISO(),

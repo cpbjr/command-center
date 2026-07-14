@@ -10,7 +10,7 @@ import {
 import { formatDate } from '@/lib/format'
 
 interface GbpInsightsWidgetProps {
-  clientId: number
+  contractId: number
 }
 
 /** Returns the most recent Friday (or today if Friday) in YYYY-MM-DD format */
@@ -59,8 +59,8 @@ function deltaClass(curr: number | null, prev: number | null): string {
   return 'text-muted-foreground'
 }
 
-export function GbpInsightsWidget({ clientId }: GbpInsightsWidgetProps) {
-  const { data: insights = [] } = useGbpInsights(clientId)
+export function GbpInsightsWidget({ contractId }: GbpInsightsWidgetProps) {
+  const { data: insights = [] } = useGbpInsights(contractId)
   const upsert = useUpsertGbpInsight()
 
   const [showForm, setShowForm] = useState(false)
@@ -85,7 +85,7 @@ export function GbpInsightsWidget({ clientId }: GbpInsightsWidgetProps) {
     e.preventDefault()
 
     const payload: GbpInsightInsert = {
-      client_id: clientId,
+      contract_id: contractId,
       week_ending: weekEnding || lastFridayISO(),
       search_views: metrics.search_views !== '' ? parseInt(metrics.search_views) : null,
       maps_views: metrics.maps_views !== '' ? parseInt(metrics.maps_views) : null,

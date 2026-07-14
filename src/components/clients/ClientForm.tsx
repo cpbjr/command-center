@@ -239,11 +239,11 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   <ActivityFeed businessId={client.business_id} />
                 </TabsContent>
                 <TabsContent value="gbp" className="pt-4 space-y-6">
-                  <GbpScoreWidget clientId={client.id} />
-                  <GbpInsightsWidget clientId={client.id} />
-                  <BaselineWidget clientId={client.id} />
+                  <GbpScoreWidget contractId={client.id} />
+                  <GbpInsightsWidget contractId={client.id} />
+                  <BaselineWidget contractId={client.id} />
                   <div className="mt-6 border-t pt-4">
-                    <AnalyticsWidget clientId={client.id} clientName={client.wpa_businesses?.name ?? client.business_id} />
+                    <AnalyticsWidget contractId={client.id} clientName={client.wpa_businesses?.name ?? client.business_id} />
                   </div>
                 </TabsContent>
                 <TabsContent value="docs" className="pt-4">
