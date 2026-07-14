@@ -1,3 +1,19 @@
+> ## ✅ COMPLETED 2026-07-14
+>
+> All tasks shipped on branch `claude/phase-2-steps-5-6`. Work log:
+>
+> **Step 6 (FK restore):** Tasks 6.1–6.5 done. Corrected the plan's 6-table list to **5** — `wpa_client_activity` was already dropped in `20260620044614`. Deleted orphan `client_id=3` ("A Dog Zen Salon"), renamed `client_id → contract_id` + real FKs to `wpa_contracts` on 5 tables; renamed `clientId → contractId` through hooks/query-keys/widgets. Build green.
+>
+> **Step 5 additive (5.1–5.8):** Added `dropped_reason`, contract `close_reason`/`closed_at`, `dropped` enum value, `end_engagement` RPC. New `src/lib/lifecycle.ts`; RPC-based `useMoveToStage`/`useMarkDropped`/`useEndEngagement`; StatusBadge/LeadCard/LeadTable/LeadDetail/Discovery rewired to `lifecycle_stage` with `actor='human'`; deleted `useUpdateBusinessStatus`. Also caught + fixed a latent bug: `wpa_businesses_with_score` view (the app's data source) froze its column list at CREATE time and had to be recreated to expose the new columns (`20260714214101`).
+>
+> **Step 5 gated (5.9+5.10):** Ran after Bob's VPS skill was cut over to protocol v2 (confirmed via `2026-07-14-cc-protocol-schema-drift.md`). **Merged into one migration** (`20260714040000`) because the sync trigger's mapping fn takes `lifecycle_stage` as a param type, blocking `DROP TYPE` until the trigger + column were gone first. Remapped 1904 rows (new/prospect→new_prospect, qualified/proposal/lead→lead, churned→relationship_ended) with none lost; rebuilt enum to the final 6 values; dropped `contact_status`. Dropped 3 views that read `contact_status`: recreated `wpa_businesses_with_score` without it; **dropped** untracked legacy `public.businesses_with_crm_status` + `public.businesses_with_score` (public-schema debris). Pre-remap snapshot in `artifacts/2026-07-14-lifecycle-stage-pre-remap-snapshot.json`.
+>
+> **Also updated:** `.agent/System/bob-task-protocol.md` (+ Obsidian copy) to the final vocabulary + `end_engagement`; `CONTEXT.md` (removed planned-migration notes).
+>
+> **Follow-ups (not done here):** (1) full `public`-schema cleanup — ~10 leftover legacy tables remain, raised separately with owner; (2) remove `bobwork` dual-write in `TaskForm.tsx` once Bob is fully off the tag.
+>
+> ---
+
 # Phase 2 Steps 5–6: Finish Pipeline Migration + Restore FKs — Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
