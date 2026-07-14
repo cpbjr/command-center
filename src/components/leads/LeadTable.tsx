@@ -17,9 +17,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { ScoreBadge } from './ScoreBadge'
 import { ConvertToClientDialog } from './ConvertToClientDialog'
-import { type Business, useUpdateBusinessStatus } from '@/hooks/use-businesses'
+import { type Business, useMoveToStage, useMarkDropped } from '@/hooks/use-businesses'
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon, GlobeIcon, PhoneIcon, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { LEAD_DROPDOWN_STAGES, STAGE_LABELS, type LifecycleStage } from '@/lib/lifecycle'
 
 function extractCity(address: string): string {
   if (!address) return '—'
@@ -77,7 +78,7 @@ export function LeadTable({
         case 'name': cmp = (a.name ?? '').localeCompare(b.name ?? ''); break
         case 'city': cmp = extractCity(a.address).localeCompare(extractCity(b.address)); break
         case 'category': cmp = getCategory(a).localeCompare(getCategory(b)); break
-        case 'status': cmp = (a.contact_status ?? '').localeCompare(b.contact_status ?? ''); break
+        case 'status': cmp = (a.lifecycle_stage ?? '').localeCompare(b.lifecycle_stage ?? ''); break
         case 'score': cmp = (a.latest_score ?? 0) - (b.latest_score ?? 0); break
       }
       return sortDir === 'desc' ? -cmp : cmp
@@ -102,7 +103,8 @@ export function LeadTable({
     )
   }
 
-  const updateStatus = useUpdateBusinessStatus()
+  const moveToStage = useMoveToStage()
+  const markDropped = useMarkDropped()
   const totalPages = Math.ceil(total / pageSize)
   const start = page * pageSize + 1
   const end = Math.min((page + 1) * pageSize, total)
@@ -110,13 +112,9 @@ export function LeadTable({
   const [convertDialogOpen, setConvertDialogOpen] = useState(false)
   const [pendingBusiness, setPendingBusiness] = useState<Business | null>(null)
 
-  function handleStatusChange(biz: Business, status: Business['contact_status']) {
-    if (status === 'CLOSED-WON') {
-      setPendingBusiness(biz)
-      setConvertDialogOpen(true)
-    } else {
-      updateStatus.mutate({ id: biz.id, contact_status: status })
-    }
+  function handleStageChange(biz: Business, stage: LifecycleStage) {
+    if (stage === 'dropped') markDropped.mutate({ id: biz.id, reason: null })
+    else moveToStage.mutate({ id: biz.id, stage })
   }
 
   return (
@@ -169,27 +167,43 @@ export function LeadTable({
                       <ScoreBadge score={biz.latest_score} />
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Select
-                        value={biz.contact_status}
-                        onValueChange={(v) =>
-                          handleStatusChange(biz, v as Business['contact_status'])
-                        }
-                      >
-                        <SelectTrigger
-                          size="sm"
-                          className="h-7 w-[110px]"
-                          onClick={(e) => e.stopPropagation()}
+                      <div className="flex items-center gap-1">
+                        <Select
+                          value={biz.lifecycle_stage}
+                          onValueChange={(v) =>
+                            handleStageChange(biz, v as LifecycleStage)
+                          }
                         >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(['NEW', 'IDENTIFIED', 'TARGETED', 'CONTACTED', 'REPLIED', 'CLOSED', 'CLOSED-WON'] as const).map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {s === 'CLOSED-WON' ? 'Closed-Won' : s.charAt(0) + s.slice(1).toLowerCase()}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                          <SelectTrigger
+                            size="sm"
+                            className="h-7 w-[110px]"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {LEAD_DROPDOWN_STAGES.map((s) => (
+                              <SelectItem key={s} value={s}>
+                                {STAGE_LABELS[s]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {biz.lifecycle_stage === 'lead' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setPendingBusiness(biz)
+                              setConvertDialogOpen(true)
+                            }}
+                          >
+                            Convert
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-center">
                       {biz.rating != null ? (
