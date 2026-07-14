@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query-keys'
 
 const FILE_SERVER_BASE = import.meta.env.VITE_FILE_SERVER_BASE_URL as string
 const API_KEY = import.meta.env.VITE_FILE_SERVER_API_KEY as string
@@ -29,7 +30,7 @@ async function fetchListing(path: string): Promise<FileListing> {
 
 export function useFileListing(path: string | null) {
   return useQuery<FileListing, Error>({
-    queryKey: ['file-listing', path],
+    queryKey: queryKeys.fileTree.listing(path),
     queryFn: () => fetchListing(path!),
     enabled: !!path && !!FILE_SERVER_BASE && !!API_KEY,
     retry: false,

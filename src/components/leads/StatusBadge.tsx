@@ -3,7 +3,9 @@ import { cn } from '@/lib/utils'
 import type { Business } from '@/hooks/use-businesses'
 
 interface StatusBadgeProps {
-  status: Business['contact_status']
+  // Accepts the strict lead statuses plus the loosely-typed values coming from
+  // the businesses view (string | null); unknown values fall back to "New".
+  status: Business['contact_status'] | string | null | undefined
   className?: string
 }
 
@@ -42,7 +44,7 @@ const statusConfig: Record<
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const config = statusConfig[status] ?? statusConfig.NEW
+  const config = (status != null && statusConfig[status as Business['contact_status']]) || statusConfig.NEW
   return (
     <Badge
       variant="outline"

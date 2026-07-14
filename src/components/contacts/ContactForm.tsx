@@ -34,8 +34,9 @@ export function ContactForm({ businessId, contact, onDone }: Props) {
         business_id: contact.business_id,
       })
     } else {
+      if (!businessId) return
       await add.mutateAsync({
-        business_id: businessId ?? null,
+        business_id: businessId,
         name: name.trim(),
         last_name: lastName.trim(),
         role: role.trim(),

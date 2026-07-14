@@ -16,14 +16,10 @@ import { ScoreBar } from '@/components/discovery/ScoreBar'
 import { LeadDetail } from '@/components/leads/LeadDetail'
 import {
   useDiscoveryStats,
-  useRecentDiscoveries,
   useDiscoverySearch,
   type DiscoveryBusiness,
 } from '@/hooks/use-discovery'
 import type { Business } from '@/hooks/use-businesses'
-import { formatDate } from '@/lib/format'
-
-const RECENT_LIMIT = 50
 
 function parseCityFromAddress(address: string | null | undefined): string {
   if (!address) return '—'
@@ -71,14 +67,12 @@ export default function DiscoveryPage() {
   }, [searchInput])
 
   const { data: stats, isLoading: statsLoading } = useDiscoveryStats()
-  const { data: recent, isLoading: recentLoading } = useRecentDiscoveries(RECENT_LIMIT)
-  const { data: searchResults, isLoading: searchLoading } = useDiscoverySearch(debouncedSearch)
+  // A single query serves both modes: with an empty query it returns the most
+  // recent discoveries, and with a query it filters server-side.
+  const { data: searchResults, isLoading } = useDiscoverySearch(debouncedSearch)
 
+  const businesses: DiscoveryBusiness[] = searchResults ?? []
   const isSearching = debouncedSearch.trim().length > 0
-  const businesses: DiscoveryBusiness[] = isSearching
-    ? (searchResults ?? [])
-    : (recent ?? [])
-  const isLoading = isSearching ? searchLoading : recentLoading
 
   useEffect(() => {
     if (!selectedBusiness) return
@@ -188,16 +182,14 @@ export default function DiscoveryPage() {
                 <TableHead className="font-semibold">Score</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="hidden lg:table-cell font-semibold">Rating</TableHead>
-                <TableHead className="hidden lg:table-cell font-semibold">Audited</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {businesses.map((biz) => {
                 const category = Array.isArray(biz.gbp_categories) && biz.gbp_categories.length > 0
-                  ? biz.gbp_categories[0]
+                  ? String(biz.gbp_categories[0])
                   : '—'
                 const city = parseCityFromAddress(biz.address)
-                const auditedAt = biz.last_audited_at ? formatDate(biz.last_audited_at) : '—'
 
                 return (
                   <TableRow
@@ -239,9 +231,6 @@ export default function DiscoveryPage() {
                       ) : (
                         <span className="text-sm text-muted-foreground">—</span>
                       )}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
-                      {auditedAt}
                     </TableCell>
                   </TableRow>
                 )

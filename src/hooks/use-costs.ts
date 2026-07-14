@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { queryKeys } from '@/lib/query-keys'
 
 export interface DailyCost {
   id: number
@@ -53,7 +54,7 @@ export function useCosts() {
   const { ninetyDaysAgoStr } = getDateBounds()
 
   return useQuery<DailyCost[]>({
-    queryKey: ['costs', ninetyDaysAgoStr],
+    queryKey: queryKeys.costs.since(ninetyDaysAgoStr),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_daily_costs')

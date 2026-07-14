@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { queryKeys } from '@/lib/query-keys'
 
 export interface ClientBaseline {
   id: number
@@ -26,7 +27,7 @@ export interface ClientBaseline {
 
 export function useClientBaselines(clientId: number | null) {
   return useQuery<ClientBaseline[]>({
-    queryKey: ['client-baselines', clientId],
+    queryKey: queryKeys.clientBaselines.byClient(clientId),
     enabled: !!clientId,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -43,7 +44,7 @@ export function useClientBaselines(clientId: number | null) {
 
 export function useLatestBaseline(clientId: number | null) {
   return useQuery<ClientBaseline | null>({
-    queryKey: ['client-baselines', clientId, 'latest'],
+    queryKey: queryKeys.clientBaselines.latest(clientId),
     enabled: !!clientId,
     queryFn: async () => {
       const { data, error } = await supabase

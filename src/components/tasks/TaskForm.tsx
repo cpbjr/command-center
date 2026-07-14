@@ -91,14 +91,19 @@ const DEFAULT_STATE: FormState = {
 export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultBusinessId, defaultBusinessName, defaultProjectId }: TaskFormProps) {
   const [form, setForm] = useState<FormState>(DEFAULT_STATE)
   const [leadSearch, setLeadSearch] = useState('')
+  const [debouncedLeadSearch, setDebouncedLeadSearch] = useState('')
   const [leadOpen, setLeadOpen] = useState(false)
+  // Remembers the name of the currently-selected lead so the trigger label stays
+  // correct even when the server-side search list no longer contains that row.
+  const [selectedLeadName, setSelectedLeadName] = useState<string | null>(null)
   const [comment, setComment] = useState('')
   const leadRef = useRef<HTMLDivElement>(null)
+  const leadSearchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
   const { data: clients = [] } = useContracts()
-  const { data: businesses = [], isLoading: businessesLoading } = useBusinessesSimple()
+  const { data: businesses = [], isLoading: businessesLoading } = useBusinessesSimple(debouncedLeadSearch)
   const { data: events = [] } = useTaskEvents(task?.id ?? null)
   const addEvent = useAddTaskEvent()
 
@@ -128,6 +133,7 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
         tagInput: '',
         assigned_to: task.assigned_to ?? 'human',
       })
+      setSelectedLeadName(task.wpa_businesses?.name ?? defaultBusinessName ?? null)
     } else {
       setForm({
         ...DEFAULT_STATE,
@@ -135,6 +141,7 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
         contract_id: defaultContractId ? String(defaultContractId) : '',
         business_id: defaultBusinessId ?? '',
       })
+      setSelectedLeadName(defaultBusinessId ? (defaultBusinessName ?? null) : null)
     }
     setLeadSearch('')
     setLeadOpen(false)
@@ -149,6 +156,16 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
     if (leadOpen) document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [leadOpen])
+
+  useEffect(() => {
+    if (leadSearchDebounceRef.current) clearTimeout(leadSearchDebounceRef.current)
+    leadSearchDebounceRef.current = setTimeout(() => {
+      setDebouncedLeadSearch(leadSearch)
+    }, 300)
+    return () => {
+      if (leadSearchDebounceRef.current) clearTimeout(leadSearchDebounceRef.current)
+    }
+  }, [leadSearch])
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -358,7 +375,10 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
               >
                 <span className={form.business_id ? '' : 'text-muted-foreground'}>
                   {form.business_id
-                    ? (businesses.find(b => b.id === form.business_id)?.name ?? defaultBusinessName ?? 'Loading…')
+                    ? (selectedLeadName
+                        ?? businesses.find(b => b.id === form.business_id)?.name
+                        ?? defaultBusinessName
+                        ?? 'Loading…')
                     : 'None'}
                 </span>
                 <ChevronsUpDownIcon className="size-4 opacity-50 shrink-0" />
@@ -378,23 +398,17 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
                   <div className="max-h-52 overflow-y-auto py-1">
                     {businessesLoading ? (
                       <p className="px-3 py-2 text-sm text-muted-foreground">Loading…</p>
-                    ) : (() => {
-                      const filtered = businesses.filter(b =>
-                        b.name.toLowerCase().includes(leadSearch.toLowerCase())
-                      )
-                      const visible = filtered.slice(0, 100)
-                      const hiddenCount = filtered.length - visible.length
-                      return (
+                    ) : (
                         <>
                         <button
                           type="button"
                           className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-                          onClick={() => { set('business_id', ''); setLeadOpen(false) }}
+                          onClick={() => { set('business_id', ''); setSelectedLeadName(null); setLeadOpen(false) }}
                         >
                           {!form.business_id && <CheckIcon className="size-3.5" />}
                           <span className={!form.business_id ? 'ml-0' : 'ml-5'}>None</span>
                         </button>
-                        {visible.map(b => (
+                        {businesses.map(b => (
                           <button
                             key={b.id}
                             type="button"
@@ -402,6 +416,7 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
                             onClick={() => {
                               set('business_id', b.id)
                               set('contract_id', '')
+                              setSelectedLeadName(b.name)
                               setLeadOpen(false)
                             }}
                           >
@@ -411,17 +426,13 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
                             <span className="truncate">{b.name}</span>
                           </button>
                         ))}
-                        {filtered.length === 0 && (
-                          <p className="px-3 py-2 text-sm text-muted-foreground">No results</p>
-                        )}
-                        {hiddenCount > 0 && (
-                          <p className="px-3 py-2 text-xs text-muted-foreground border-t">
-                            {hiddenCount} more — type to narrow results
+                        {businesses.length === 0 && (
+                          <p className="px-3 py-2 text-sm text-muted-foreground">
+                            {leadSearch ? 'No results' : 'Type to search leads'}
                           </p>
                         )}
                         </>
-                      )
-                    })()}
+                      )}
                   </div>
                 </div>
               )}
@@ -483,7 +494,7 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
                 type="checkbox"
                 id="is_template"
                 checked={form.is_template}
-                onChange={(e) => set('is_template', e.target.checked as any)}
+                onChange={(e) => set('is_template', e.target.checked)}
                 className="h-4 w-4 rounded border-input"
               />
               <label htmlFor="is_template" className="text-sm font-medium">Make Recurring</label>

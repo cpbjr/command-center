@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { queryKeys } from '@/lib/query-keys'
 
 export type DocumentType = 'receipt' | 'pdf' | 'image' | 'link' | 'note' | 'plan'
 
@@ -23,7 +24,7 @@ export interface WpaDocumentWithClient extends WpaDocument {
 
 export function useAllDocuments(typeFilter?: DocumentType) {
   return useQuery<WpaDocumentWithClient[]>({
-    queryKey: ['documents', 'all', typeFilter],
+    queryKey: queryKeys.documents.all(typeFilter),
     queryFn: async () => {
       let query = supabase
         .from('wpa_documents')
@@ -48,7 +49,7 @@ export function useAllDocuments(typeFilter?: DocumentType) {
 
 export function useContractDocuments(contractId: number | null) {
   return useQuery<WpaDocument[]>({
-    queryKey: ['documents', 'contract', contractId],
+    queryKey: queryKeys.documents.byContract(contractId),
     enabled: !!contractId,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -79,10 +80,10 @@ export function useAddDocument() {
     },
     onSuccess: (data) => {
       if (data.contract_id) {
-        queryClient.invalidateQueries({ queryKey: ['documents', 'contract', data.contract_id] })
+        queryClient.invalidateQueries({ queryKey: queryKeys.documents.byContract(data.contract_id) })
       }
       if (data.business_id) {
-        queryClient.invalidateQueries({ queryKey: ['documents', 'business', data.business_id] })
+        queryClient.invalidateQueries({ queryKey: queryKeys.documents.byBusiness(data.business_id) })
       }
     },
   })
@@ -105,10 +106,10 @@ export function useDeleteDocument() {
     },
     onSuccess: (data) => {
       if (data.contract_id) {
-        queryClient.invalidateQueries({ queryKey: ['documents', 'contract', data.contract_id] })
+        queryClient.invalidateQueries({ queryKey: queryKeys.documents.byContract(data.contract_id) })
       }
       if (data.business_id) {
-        queryClient.invalidateQueries({ queryKey: ['documents', 'business', data.business_id] })
+        queryClient.invalidateQueries({ queryKey: queryKeys.documents.byBusiness(data.business_id) })
       }
     },
   })

@@ -19,7 +19,7 @@ import {
 import { useUpdateContract } from '@/hooks/use-contracts'
 import type { Contract, ContractUpdate, ServiceTier, ContractStatus } from '@/hooks/use-contracts'
 import { ContactList } from '@/components/contacts/ContactList'
-import { ClientTaskList } from '@/components/tasks/ClientTaskList'
+import { EntityTaskList } from '@/components/tasks/EntityTaskList'
 import { ActivityFeed } from '@/components/shared/ActivityFeed'
 import { GbpScoreWidget } from '@/components/clients/GbpScoreWidget'
 import { GbpInsightsWidget } from '@/components/clients/GbpInsightsWidget'
@@ -233,7 +233,7 @@ export function ClientForm({ open, onOpenChange, client }: ClientFormProps) {
                   <ContactList businessId={client.business_id} />
                 </TabsContent>
                 <TabsContent value="tasks" className="pt-4">
-                  <ClientTaskList clientId={client.id} businessId={client.business_id} />
+                  <EntityTaskList contractId={client.id} businessId={client.business_id} />
                 </TabsContent>
                 <TabsContent value="activity" className="pt-4">
                   <ActivityFeed businessId={client.business_id} />

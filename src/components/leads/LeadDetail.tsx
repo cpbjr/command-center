@@ -29,7 +29,7 @@ import { ConvertToClientDialog } from './ConvertToClientDialog'
 import { type Business, useBusinessAudit, useUpdateBusinessStatus, useUpdateBusinessNotes, useUpdateBusinessFolderPath, useDeleteBusiness } from '@/hooks/use-businesses'
 import { AuditTriggerButton } from './AuditTriggerButton'
 import { ContactList } from '@/components/contacts/ContactList'
-import { LeadTaskList } from '@/components/tasks/LeadTaskList'
+import { EntityTaskList } from '@/components/tasks/EntityTaskList'
 import { ActivityFeed } from '@/components/shared/ActivityFeed'
 import { DocumentList } from '@/components/clients/DocumentList'
 import { formatDate } from '@/lib/format'
@@ -347,7 +347,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Tasks
                       </h3>
-                      <LeadTaskList businessId={business.id} businessName={business.name} />
+                      <EntityTaskList businessId={business.id} businessName={business.name} />
                     </section>
 
                     {/* Activity Log */}

@@ -5,17 +5,24 @@ import { useTasks, type Task } from '@/hooks/use-tasks'
 import { TaskCard } from './TaskCard'
 import { TaskForm } from './TaskForm'
 
-interface ClientTaskListProps {
-  clientId: number
+interface EntityTaskListProps {
+  /** Business (lead) to scope tasks to, when the entity has a linked business. */
   businessId?: string | null
+  /** Business name, forwarded to the task form as a default label. */
+  businessName?: string
+  /**
+   * Contract to scope tasks to when there is no linked business. Clients pass
+   * their id here; clientId == contractId because those ids map 1:1 (that
+   * fragile assumption is tracked separately — do not "fix" it here).
+   */
+  contractId?: number
 }
 
-export function ClientTaskList({ clientId, businessId }: ClientTaskListProps) {
-  // If the client has a linked business, fetch tasks by business_id
-  // Otherwise fall back to contract_id (clientId == contractId since IDs map 1:1)
+export function EntityTaskList({ businessId, businessName, contractId }: EntityTaskListProps) {
+  // Prefer scoping by business_id; otherwise fall back to contract_id.
   const { data: tasks = [], isLoading } = useTasks(
     undefined,
-    businessId ? undefined : clientId,
+    businessId ? undefined : contractId,
     businessId || undefined,
   )
   const [formOpen, setFormOpen] = useState(false)
@@ -60,8 +67,9 @@ export function ClientTaskList({ clientId, businessId }: ClientTaskListProps) {
         open={formOpen}
         onOpenChange={setFormOpen}
         task={editingTask}
-        defaultContractId={clientId}
+        defaultContractId={contractId}
         defaultBusinessId={businessId || undefined}
+        defaultBusinessName={businessName}
       />
     </div>
   )

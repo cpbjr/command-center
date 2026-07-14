@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { queryKeys } from '@/lib/query-keys'
 
 export interface GbpScore {
   id: number
@@ -14,7 +15,7 @@ export type GbpScoreInsert = Omit<GbpScore, 'id' | 'created_at'>
 
 export function useGbpScores(clientId: number | null) {
   return useQuery<GbpScore[]>({
-    queryKey: ['gbp-scores', clientId],
+    queryKey: queryKeys.gbpScores.byClient(clientId),
     enabled: !!clientId,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -44,7 +45,7 @@ export function useAddGbpScore() {
       return data as GbpScore
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['gbp-scores', data.client_id] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.gbpScores.byClient(data.client_id) })
     },
   })
 }

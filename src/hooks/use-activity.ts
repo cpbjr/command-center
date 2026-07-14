@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { queryKeys } from '@/lib/query-keys'
 
 export type ActivityType = 'call' | 'email' | 'meeting' | 'text' | 'action' | 'note' | 'stage_change'
 
@@ -14,7 +15,7 @@ export interface Activity {
 
 export function useActivity(businessId: string | null) {
   return useQuery<Activity[]>({
-    queryKey: ['activity', businessId],
+    queryKey: queryKeys.activity.byBusiness(businessId),
     enabled: !!businessId,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -52,7 +53,7 @@ export function useAddActivity() {
       return data as Activity
     },
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ['activity', vars.business_id] })
+      qc.invalidateQueries({ queryKey: queryKeys.activity.byBusiness(vars.business_id) })
     },
   })
 }

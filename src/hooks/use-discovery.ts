@@ -1,12 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import type { Business } from '@/hooks/use-businesses'
+import type { Database } from '@/lib/database.types'
+import { queryKeys } from '@/lib/query-keys'
 
-// Extend Business with view-added columns that may not be present in base type
-export type DiscoveryBusiness = Business & {
-  audit_count: number | null
-  last_audited_at: string | null
-}
+// Rows from the wpa_businesses_with_score view (base business columns + latest_score).
+export type DiscoveryBusiness = Database['wpa']['Views']['wpa_businesses_with_score']['Row']
 
 export interface DiscoveryStats {
   totalDiscovered: number
@@ -17,7 +15,7 @@ export interface DiscoveryStats {
 
 export function useDiscoveryStats() {
   return useQuery<DiscoveryStats>({
-    queryKey: ['discovery-stats'],
+    queryKey: queryKeys.discovery.stats(),
     queryFn: async () => {
       // Total businesses
       const { count: totalDiscovered, error: e1 } = await supabase
@@ -25,11 +23,12 @@ export function useDiscoveryStats() {
         .select('*', { count: 'exact', head: true })
       if (e1) throw e1
 
-      // Total with at least one audit
+      // Total with at least one audit (a non-null latest_score means the
+      // business has been audited at least once).
       const { count: totalAudited, error: e2 } = await supabase
         .from('wpa_businesses_with_score')
         .select('*', { count: 'exact', head: true })
-        .not('last_audited_at', 'is', null)
+        .not('latest_score', 'is', null)
       if (e2) throw e2
 
       // Avg score across audited businesses
@@ -39,7 +38,9 @@ export function useDiscoveryStats() {
         .not('latest_score', 'is', null)
       if (e3) throw e3
 
-      const scores = (scoreData ?? []).map((r: { latest_score: number }) => r.latest_score)
+      const scores = (scoreData ?? [])
+        .map((r) => r.latest_score)
+        .filter((s): s is number => s !== null)
       const avgScore =
         scores.length > 0
           ? scores.reduce((sum: number, s: number) => sum + s, 0) / scores.length
@@ -63,27 +64,10 @@ export function useDiscoveryStats() {
   })
 }
 
-export function useRecentDiscoveries(limit: number) {
-  return useQuery<DiscoveryBusiness[]>({
-    queryKey: ['discovery-recent', limit],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('wpa_businesses_with_score')
-        .select('*')
-        .order('discovered_at', { ascending: false })
-        .limit(limit)
-
-      if (error) throw error
-      return (data ?? []) as DiscoveryBusiness[]
-    },
-    staleTime: 2 * 60 * 1000,
-  })
-}
-
 export function useDiscoverySearch(query: string) {
   const trimmed = query.trim()
   return useQuery<DiscoveryBusiness[]>({
-    queryKey: ['discovery-search', trimmed],
+    queryKey: queryKeys.discovery.search(trimmed),
     queryFn: async () => {
       let q = supabase
         .from('wpa_businesses_with_score')
@@ -100,7 +84,7 @@ export function useDiscoverySearch(query: string) {
 
       const { data, error } = await q
       if (error) throw error
-      return (data ?? []) as DiscoveryBusiness[]
+      return data ?? []
     },
     staleTime: 1 * 60 * 1000,
   })

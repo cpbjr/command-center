@@ -1,33 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import type { Database } from '@/lib/database.types'
+import { queryKeys } from '@/lib/query-keys'
 
-export interface Contact {
-  id: number
-  business_id: string | null
-  name: string
-  last_name: string
-  role: string
-  phone: string
-  email: string
-  is_primary: boolean
-  notes: string
-  created_at: string
-  updated_at: string
-}
+export type Contact = Database['wpa']['Tables']['wpa_contacts']['Row']
 
-export interface ContactNote {
-  id: number
-  contact_id: number
+export type ContactNote = Omit<
+  Database['wpa']['Tables']['wpa_contact_notes']['Row'],
+  'type'
+> & {
   type: 'call' | 'email' | 'meeting' | 'text' | 'note'
-  body: string
-  occurred_at: string
-  created_at: string
 }
 
 // Fetch contacts for a business (lead)
 export function useBusinessContacts(businessId: string | null) {
   return useQuery({
-    queryKey: ['contacts', 'business', businessId],
+    queryKey: queryKeys.contacts.byBusiness(businessId),
     queryFn: async () => {
       if (!businessId) return []
       const { data, error } = await supabase
@@ -57,7 +45,7 @@ export function useAddContact() {
       return data as Contact
     },
     onSuccess: (_, vars) => {
-      if (vars.business_id) qc.invalidateQueries({ queryKey: ['contacts', 'business', vars.business_id] })
+      if (vars.business_id) qc.invalidateQueries({ queryKey: queryKeys.contacts.byBusiness(vars.business_id) })
     },
   })
 }
@@ -77,7 +65,7 @@ export function useUpdateContact() {
       return data as Contact
     },
     onSuccess: (data) => {
-      if (data.business_id) qc.invalidateQueries({ queryKey: ['contacts', 'business', data.business_id] })
+      if (data.business_id) qc.invalidateQueries({ queryKey: queryKeys.contacts.byBusiness(data.business_id) })
     },
   })
 }
@@ -92,7 +80,7 @@ export function useDeleteContact() {
       return { business_id }
     },
     onSuccess: ({ business_id }) => {
-      if (business_id) qc.invalidateQueries({ queryKey: ['contacts', 'business', business_id] })
+      if (business_id) qc.invalidateQueries({ queryKey: queryKeys.contacts.byBusiness(business_id) })
     },
   })
 }
@@ -100,7 +88,7 @@ export function useDeleteContact() {
 // Fetch notes for a contact
 export function useContactNotes(contactId: number | null) {
   return useQuery({
-    queryKey: ['contact-notes', contactId],
+    queryKey: queryKeys.contacts.notes(contactId),
     queryFn: async () => {
       if (!contactId) return []
       const { data, error } = await supabase
@@ -129,7 +117,7 @@ export function useAddContactNote() {
       return data as ContactNote
     },
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['contact-notes', data.contact_id] })
+      qc.invalidateQueries({ queryKey: queryKeys.contacts.notes(data.contact_id) })
     },
   })
 }
@@ -144,7 +132,7 @@ export function useDeleteContactNote() {
       return { contact_id }
     },
     onSuccess: ({ contact_id }) => {
-      qc.invalidateQueries({ queryKey: ['contact-notes', contact_id] })
+      qc.invalidateQueries({ queryKey: queryKeys.contacts.notes(contact_id) })
     },
   })
 }

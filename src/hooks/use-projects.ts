@@ -1,33 +1,39 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import type { Database, Json } from '@/lib/database.types'
+import { queryKeys } from '@/lib/query-keys'
+import { PRIORITY_ORDER } from '@/lib/constants'
+
+type ProjectRow = Database['wpa']['Tables']['wpa_projects']['Row']
 
 export type ProjectStatus = 'active' | 'on_hold' | 'completed'
 export type ProjectPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type ProjectCategory = 'Client Work' | 'WPA Own' | 'Infrastructure' | 'Marketing'
 export type AgentStatus = 'idle' | 'working' | 'waiting_review' | 'error' | 'completed'
 
-export interface Project {
-  id: number
-  name: string
-  description: string | null
+// Base columns from the generated row type, with domain enums narrowed, the
+// columns the app treats as non-null asserted, and the wpa_contracts join added.
+export type Project = Omit<
+  ProjectRow,
+  | 'status'
+  | 'priority'
+  | 'category'
+  | 'agent_status'
+  | 'progress_pct'
+  | 'budget_cents'
+  | 'budget_spent_cents'
+  | 'tags'
+  | 'metadata'
+> & {
   status: ProjectStatus
-  progress_pct: number
-  next_milestone: string | null
-  contract_id: number | null
-  due_date: string | null
-  start_date: string | null
-  budget_cents: number
-  budget_spent_cents: number
   priority: ProjectPriority
   category: ProjectCategory
-  owner: string
-  tags: string[]
-  metadata: Record<string, unknown>
   agent_status: AgentStatus
-  agent_notes: string | null
-  last_agent_activity: string | null
-  created_at: string
-  updated_at: string
+  progress_pct: number
+  budget_cents: number
+  budget_spent_cents: number
+  tags: string[]
+  metadata: Json
   wpa_contracts: { id: number; wpa_businesses: { name: string } | null } | null
 }
 
@@ -46,7 +52,7 @@ export type ProjectInsert = {
   category?: ProjectCategory
   owner?: string
   tags?: string[]
-  metadata?: Record<string, unknown>
+  metadata?: Json
   agent_status?: AgentStatus
   agent_notes?: string | null
 }
@@ -59,13 +65,6 @@ const STATUS_ORDER: Record<ProjectStatus, number> = {
   completed: 2,
 }
 
-const PRIORITY_ORDER: Record<ProjectPriority, number> = {
-  urgent: 0,
-  high: 1,
-  medium: 2,
-  low: 3,
-}
-
 export function useProjects(filters?: {
   status?: ProjectStatus
   category?: ProjectCategory
@@ -73,7 +72,7 @@ export function useProjects(filters?: {
   contractId?: number
 }) {
   return useQuery<Project[]>({
-    queryKey: ['projects', filters],
+    queryKey: queryKeys.projects.list(filters),
     queryFn: async () => {
       let query = supabase
         .from('wpa_projects')
@@ -101,7 +100,7 @@ export function useProjects(filters?: {
 
 export function useProject(id: number | null) {
   return useQuery<Project | null>({
-    queryKey: ['projects', id],
+    queryKey: queryKeys.projects.detail(id),
     enabled: id != null,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -131,7 +130,7 @@ export function useCreateProject() {
       return data as Project
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all })
     },
   })
 }
@@ -152,7 +151,7 @@ export function useUpdateProject() {
       return data as Project
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all })
     },
   })
 }
@@ -170,7 +169,7 @@ export function useDeleteProject() {
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all })
     },
   })
 }
@@ -179,7 +178,7 @@ export function useDeleteProject() {
 
 export function useProjectTasks(projectId: number | null) {
   return useQuery({
-    queryKey: ['tasks', { projectId }],
+    queryKey: queryKeys.tasks.byProject(projectId),
     enabled: projectId != null,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -212,7 +211,7 @@ export interface ProjectActivityUpdate {
   author: string
   type: ProjectUpdateType
   summary: string
-  details: Record<string, unknown>
+  details: Json
   created_at: string
 }
 
@@ -221,12 +220,12 @@ export type ProjectActivityInsert = {
   author?: string
   type: ProjectUpdateType
   summary: string
-  details?: Record<string, unknown>
+  details?: Json
 }
 
 export function useProjectUpdates(projectId: number | null) {
   return useQuery<ProjectActivityUpdate[]>({
-    queryKey: ['project-updates', projectId],
+    queryKey: queryKeys.projectUpdates.byProject(projectId),
     enabled: projectId != null,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -257,7 +256,7 @@ export function useCreateProjectUpdate() {
       return data as ProjectActivityUpdate
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['project-updates', variables.project_id] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.projectUpdates.byProject(variables.project_id) })
     },
   })
 }
