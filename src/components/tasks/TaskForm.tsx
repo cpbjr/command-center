@@ -17,11 +17,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/use-tasks'
-import type { Task, TaskCategory, TaskPriority, TaskStatus } from '@/hooks/use-tasks'
+import type { Task, TaskAssignee, TaskCategory, TaskPriority, TaskStatus } from '@/hooks/use-tasks'
+import { useTaskEvents, useAddTaskEvent } from '@/hooks/use-task-events'
 import { useContracts } from '@/hooks/use-contracts'
 import { useBusinessesSimple } from '@/hooks/use-businesses'
 import { Badge } from '@/components/ui/badge'
-import { XIcon, ChevronsUpDownIcon, CheckIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { XIcon, ChevronsUpDownIcon, CheckIcon, Bot, UserIcon } from 'lucide-react'
 
 interface TaskFormProps {
   open: boolean
@@ -44,6 +46,7 @@ const STATUSES: { value: TaskStatus; label: string }[] = [
   { value: 'todo', label: 'To Do' },
   { value: 'in_progress', label: 'In Progress' },
   { value: 'blocked', label: 'Blocked' },
+  { value: 'review', label: 'Review' },
   { value: 'done', label: 'Done' },
 ]
 
@@ -61,6 +64,7 @@ interface FormState {
   recurrence_rule: string
   tags: string[]
   tagInput: string
+  assigned_to: TaskAssignee
 }
 
 function todayIso() {
@@ -81,20 +85,30 @@ const DEFAULT_STATE: FormState = {
   recurrence_rule: '',
   tags: [],
   tagInput: '',
+  assigned_to: 'human',
 }
 
 export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultBusinessId, defaultBusinessName, defaultProjectId }: TaskFormProps) {
   const [form, setForm] = useState<FormState>(DEFAULT_STATE)
   const [leadSearch, setLeadSearch] = useState('')
   const [leadOpen, setLeadOpen] = useState(false)
+  const [comment, setComment] = useState('')
   const leadRef = useRef<HTMLDivElement>(null)
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
   const { data: clients = [] } = useContracts()
   const { data: businesses = [], isLoading: businessesLoading } = useBusinessesSimple()
+  const { data: events = [] } = useTaskEvents(task?.id ?? null)
+  const addEvent = useAddTaskEvent()
 
   const isEditing = !!task
+
+  function handleAddComment() {
+    const body = comment.trim()
+    if (!task || !body) return
+    addEvent.mutate({ task_id: task.id, body }, { onSuccess: () => setComment('') })
+  }
 
   useEffect(() => {
     if (task) {
@@ -112,6 +126,7 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
         recurrence_rule: task.recurrence_rule ?? '',
         tags: task.tags ?? [],
         tagInput: '',
+        assigned_to: task.assigned_to ?? 'human',
       })
     } else {
       setForm({
@@ -142,6 +157,12 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
+    // Transition window: Bob's live skill still polls the 'bobwork' tag, so
+    // keep the tag in sync with assigned_to until the skill reads assigned_to.
+    const tags = form.assigned_to === 'bob'
+      ? Array.from(new Set([...form.tags, 'bobwork']))
+      : form.tags.filter((t) => t !== 'bobwork')
+
     const payload = {
       title: form.title.trim(),
       description: form.description.trim() || null,
@@ -153,7 +174,8 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
       due_date: form.due_date || null,
       is_template: form.is_template,
       recurrence_rule: form.is_template ? form.recurrence_rule || null : null,
-      tags: form.tags,
+      tags,
+      assigned_to: form.assigned_to,
       completed_at: form.status === 'done' && form.completed_at
         ? new Date(form.completed_at + 'T12:00:00').toISOString()
         : null,
@@ -294,6 +316,36 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid gap-1.5">
+            <label className="text-sm font-medium">Assign to</label>
+            <div className="flex w-fit items-center rounded-md border border-input p-0.5">
+              {([
+                { value: 'human', label: 'Me', icon: UserIcon },
+                { value: 'bob', label: 'Bob', icon: Bot },
+              ] as const).map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => set('assigned_to', value)}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-sm transition-colors',
+                    form.assigned_to === value
+                      ? 'bg-pine-mid text-warmwhite font-medium'
+                      : 'text-text-tertiary hover:text-text-secondary'
+                  )}
+                >
+                  <Icon className="size-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            {form.assigned_to === 'bob' && (
+              <p className="text-xs text-muted-foreground">
+                Bob picks this up on his next run and moves it to Review when finished.
+              </p>
+            )}
           </div>
 
           <div className="grid gap-1.5" ref={leadRef}>
@@ -475,7 +527,63 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
             </div>
           </DialogFooter>
         </form>
+
+        {isEditing && (
+          <div className="grid gap-2 border-t border-wpa-border/40 pt-3">
+            <label className="text-sm font-medium">Activity</label>
+            <div className="flex gap-2">
+              <Input
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); handleAddComment() }
+                }}
+                placeholder="Add a comment…"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddComment}
+                disabled={addEvent.isPending || !comment.trim()}
+              >
+                Post
+              </Button>
+            </div>
+            {events.length > 0 && (
+              <div className="max-h-44 overflow-y-auto flex flex-col gap-2 pr-1">
+                {events.map((event) => (
+                  <div key={event.id} className="text-sm">
+                    <div className="flex items-center gap-1.5">
+                      {event.actor === 'bob'
+                        ? <Bot className="size-3 text-pine-forest" />
+                        : <UserIcon className="size-3 text-text-tertiary" />}
+                      <span className="font-mono text-[10px] tracking-wider uppercase text-text-tertiary">
+                        {event.actor}{event.kind !== 'comment' ? ` · ${event.kind.replace('_', ' ')}` : ''}
+                      </span>
+                      <span className="ml-auto font-mono text-[10px] text-text-tertiary">
+                        {formatEventDate(event.created_at)}
+                      </span>
+                    </div>
+                    {event.body && (
+                      <p className="mt-0.5 text-text-secondary whitespace-pre-wrap">{event.body}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )
+}
+
+function formatEventDate(dateStr: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(dateStr))
 }

@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 
-export type TaskStatus = 'todo' | 'in_progress' | 'blocked' | 'done'
+export type TaskStatus = 'todo' | 'in_progress' | 'blocked' | 'review' | 'done'
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type TaskCategory = 'Client Work' | 'WPA Own' | 'Infrastructure' | 'Marketing' | 'Backlog'
+export type TaskAssignee = 'human' | 'bob'
 
 export interface Task {
   id: number
@@ -24,6 +25,7 @@ export interface Task {
   last_generated_at: string | null
   tags: string[]
   notes: string | null
+  assigned_to: TaskAssignee
   wpa_contracts: { id: number; wpa_businesses: { name: string } | null } | null
   wpa_businesses: { name: string } | null
 }
@@ -42,6 +44,7 @@ export type TaskInsert = {
   recurrence_rule?: string | null
   tags?: string[]
   notes?: string | null
+  assigned_to?: TaskAssignee
   completed_at?: string | null
 }
 
@@ -61,6 +64,7 @@ export function useTasks(categoryFilter?: string, contractId?: number, businessI
       let query = supabase
         .from('wpa_tasks')
         .select('*, wpa_contracts(id, wpa_businesses(name)), wpa_businesses(name)')
+        .eq('is_template', false)
 
       if (categoryFilter) {
         query = query.eq('category', categoryFilter)
@@ -219,6 +223,8 @@ export function useGenerateFromTemplates() {
           business_id: template.business_id,
           project_id: template.project_id,
           due_date: template.due_date,
+          tags: template.tags,
+          assigned_to: template.assigned_to,
           is_template: false,
         }
 

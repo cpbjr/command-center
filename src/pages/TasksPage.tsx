@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 import { TaskBoard } from '@/components/tasks/TaskBoard'
 import { TaskCard } from '@/components/tasks/TaskCard'
 import { TaskForm } from '@/components/tasks/TaskForm'
@@ -10,12 +11,15 @@ export default function TasksPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [view, setView] = useState<'board' | 'byClient'>('board')
+  const [generatedCount, setGeneratedCount] = useState<number | null>(null)
   const { data: tasks = [], isLoading, error } = useTasks()
   const generateTemplates = useGenerateFromTemplates()
 
-  useEffect(() => {
-    generateTemplates.mutate()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  function handleGenerateRecurring() {
+    generateTemplates.mutate(undefined, {
+      onSuccess: (count) => setGeneratedCount(count),
+    })
+  }
 
   function handleAdd() {
     setEditingTask(null)
@@ -61,7 +65,18 @@ export default function TasksPage() {
             </button>
           </div>
         </div>
-        <span className="font-mono text-xs text-text-tertiary">{tasks.length} tasks</span>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleGenerateRecurring}
+            disabled={generateTemplates.isPending}
+            className="flex items-center gap-1.5 text-xs text-text-tertiary hover:text-text-secondary transition-colors disabled:opacity-50"
+            title="Create due tasks from recurring templates"
+          >
+            <RefreshCw className={cn('h-3 w-3', generateTemplates.isPending && 'animate-spin')} />
+            {generatedCount === null ? 'Generate recurring' : `Generated ${generatedCount}`}
+          </button>
+          <span className="font-mono text-xs text-text-tertiary">{tasks.length} tasks</span>
+        </div>
       </div>
 
       {isLoading && (

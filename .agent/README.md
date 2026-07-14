@@ -41,31 +41,46 @@ This repo is public because there wasn't much like it on GitHub. If you're runni
 
 Supabase project: `klyzdnocgrvassppripi`
 
-Key tables:
-- `wpa_tasks` — all tasks (status, priority, category, tags, notes)
+Key tables (all in the `wpa` schema):
+- `wpa_tasks` — all tasks (status, priority, category, `assigned_to`, tags, notes)
+- `wpa_task_events` — append-only task history (comments, agent runs) with actor attribution
 - `wpa_projects` — projects with linked tasks and activity log
-- `wpa_clients` — active clients
-- `businesses` — lead/prospect database
+- `wpa_businesses` — the account spine: every lead, client, and prospect (`lifecycle_stage` is the pipeline field)
+- `wpa_contracts` — signed client engagements (one row per engagement)
+- `wpa_contacts` — people at businesses
+- `wpa_activity` — unified per-business activity log (calls, emails, notes, stage changes) with `actor`
 - `wpa_documents` — internal docs
 
-The `tags TEXT[]` column on `wpa_tasks` powers the autonomous agent work queue. Tasks tagged `bobwork` are picked up by OC Bob via REST API.
+The `assigned_to` column on `wpa_tasks` powers the agent work queue: tasks assigned to `bob` are picked up by the Bob agent via REST API. (The legacy `bobwork` tag is dual-written during the transition; see below.)
 
 ---
 
 ## Autonomous Agent Integration
 
-OC Bob (an OpenClaw agent running on a Hetzner VPS) reads and executes tasks from this database:
+Bob (a Hermes-based agent running on the VPS; successor to OC Bob/OpenClaw) reads and executes tasks from this database:
 
 ```
-GET /rest/v1/wpa_tasks?tags=cs.{bobwork}&status=neq.done&order=priority.asc
+GET /rest/v1/wpa_tasks?assigned_to=eq.bob&status=in.(todo,in_progress,blocked)&order=priority.asc
 ```
 
-After completing a task, Bob PATCHes:
+While working a task, Bob may append progress events:
+```
+POST /rest/v1/wpa_task_events
+{ "task_id": <id>, "actor": "bob", "kind": "agent_run", "body": "<what was done and outcomes>" }
+```
+
+After completing a task, Bob PATCHes it into the review inbox (the owner closes it to `done`):
 ```json
-{ "status": "done", "notes": "<what was done and outcomes>" }
+{ "status": "review" }
 ```
+
+Do NOT overwrite `wpa_tasks.notes` — task history belongs in `wpa_task_events`.
+
+Business-level actions go through the RPCs (`append_activity`, `move_to_stage`, `convert_to_client`), each of which takes an optional trailing `p_actor` that defaults to `'bob'`. See `CONTEXT.md` for signatures.
 
 Claude Code (in interactive sessions) uses the same protocol.
+
+**Transition note:** the old protocol (`tags=cs.{bobwork}`, PATCH `{status:'done', notes:...}`) still works — the UI dual-writes the `bobwork` tag while `assigned_to='bob'` — but should be migrated in Bob's skill file, after which the tag dual-write can be removed.
 
 ---
 
