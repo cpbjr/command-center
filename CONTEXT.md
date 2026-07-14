@@ -6,13 +6,16 @@
 The durable entity. A real-world company or person we have any relationship with. Never deleted. Exists from the moment first recorded. All contacts, activity, and contracts hang off the Business. `lifecycle_stage` tracks the current relationship status.
 
 **Lead**
-A Business in a pre-client lifecycle stage (`identified` through `proposal`/`lead`). A business we are actively pursuing but have not yet signed. No separate record — the Business row is the lead.
+A Business in a pre-client lifecycle stage (`identified`, `new_prospect`, or `lead`). A business we are pursuing but have not yet signed. No separate record — the Business row is the lead.
 
 **Client**
 A lifecycle stage on a Business (`lifecycle_stage = 'client'`), plus a `wpa_contracts` row recording the signed engagement. The contract is the paper trail; the stage is the current status.
 
-**Churned**
-A lifecycle stage on a Business (`lifecycle_stage = 'churned'`). A former client. Contract rows are retained as history. Re-engagement flips the stage back to `client` and adds a new contract row.
+**Dropped**
+A terminal lifecycle stage on a Business (`lifecycle_stage = 'dropped'`) for a **lead that never became a client** — either party walked, or it wasn't a fit. Distinct from `relationship_ended`, which is for former *clients*. The Business row is retained (never deleted) and can be revived back into the pipeline. Optional `dropped_reason` on `wpa_businesses`: `declined | not_a_fit | no_response`.
+
+**Relationship Ended**
+A terminal lifecycle stage on a Business (`lifecycle_stage = 'relationship_ended'`) for a **former client** — the engagement is over. Replaces the old `churned` (which wrongly implied the client lapsed; this covers all endings). The *reason* lives on the contract, not the stage: `wpa_contracts.close_reason` (`work_completed | parted_ways`) + `closed_at`. Contract rows are retained as history; re-engagement flips the stage back to `client` and adds a new contract row.
 
 **Contact**
 A person at a Business. Always belongs to a Business via `business_id`. Never belongs to a lead or client record directly — to the account. Contacts are unaffected by lifecycle stage changes.
@@ -31,15 +34,26 @@ The autonomous agent (Hermes-based, running on the VPS). Reads and writes this d
 
 ## Lifecycle Stages
 
-`lifecycle_stage` is the authoritative pipeline field:
+`lifecycle_stage` is the authoritative pipeline field. Three pre-client stages, one active-client stage, and two terminals:
 
 ```
-identified → new → prospect → qualified → proposal → lead → client → churned
-                                                              ↑ (re-engagement)
+identified → new_prospect → lead → client
+                  │           │        │
+                  └───────────┴──► dropped        (lead ended, never a client)
+                                    client ──► relationship_ended   (former client)
+                                                       ↑ (re-engagement → client)
 ```
 
-The legacy `contact_status` column is a synced mirror maintained by a DB trigger (kept until the UI fully migrates), mapping:
-IDENTIFIED↔identified, NEW↔new, TARGETED↔prospect, CONTACTED↔qualified, REPLIED↔proposal/lead, CLOSED-WON↔client, CLOSED↔churned.
+- **`identified`** — Bob discovered it; unreviewed.
+- **`new_prospect`** — reviewed and accepted into the pipeline; actively pursuing.
+- **`lead`** — hot; engaged, pre-signature.
+- **`client`** — active client (reached only via the `convert_to_client` flow, which writes the contract).
+- **`dropped`** — terminal; a lead that ended before becoming a client. Revivable. See **Dropped** entity.
+- **`relationship_ended`** — terminal; a former client. See **Relationship Ended** entity.
+
+Manually selectable in the Leads UI: `identified`, `new_prospect`, `lead`, `dropped`. `client` is reached via **Convert to Client**; `relationship_ended` via **End Engagement** (both set companion contract fields, so neither is a bare dropdown pick).
+
+> **Migration status (Phase 2 Step 5 — planned, not yet applied):** the enum above is the *target*. The live DB still carries the pre-refactor enum (`identified, new, prospect, qualified, proposal, lead, client, churned`) and the legacy `contact_status` mirror. Step 5 remaps `new + prospect → new_prospect`, `qualified + proposal + lead → lead`, `churned → relationship_ended`, adds `dropped`, then (Bob cut over first) drops `contact_status` and its sync trigger. Hard enum cutover — Bob's skill must be updated to the new values before it runs.
 
 ## Task Statuses
 
@@ -53,7 +67,10 @@ All take an optional trailing `p_actor TEXT DEFAULT 'bob'` — the UI passes `'h
 Atomically: sets `lifecycle_stage = 'client'`, inserts a `wpa_contracts` row, logs a stage-change activity entry.
 
 **`move_to_stage(p_business_id, p_stage, p_actor)`**
-Moves a business to a lifecycle stage and logs a stage-change activity entry. The sync trigger mirrors the change into `contact_status`.
+Moves a business to a lifecycle stage and logs a stage-change activity entry. (Until Step 5's `contact_status` drop, a sync trigger also mirrors the change into the legacy `contact_status` column.)
+
+**`end_engagement(p_business_id, p_close_reason, p_actor)`** *(planned — Step 5)*
+Ends an active client engagement: sets `lifecycle_stage = 'relationship_ended'`, stamps `close_reason` + `closed_at` on the business's current `wpa_contracts` row, and logs a stage-change activity entry. The client-side mirror of `convert_to_client`.
 
 **`append_activity(p_business_id, p_type, p_summary, p_occurred_at, p_actor)`**
 Unified activity writer. Used by both the Command Center UI and Bob.
