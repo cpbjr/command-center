@@ -53,8 +53,6 @@ identified → new_prospect → lead → client
 
 Manually selectable in the Leads UI: `identified`, `new_prospect`, `lead`, `dropped`. `client` is reached via **Convert to Client**; `relationship_ended` via **End Engagement** (both set companion contract fields, so neither is a bare dropdown pick).
 
-> **Migration status (Phase 2 Step 5 — planned, not yet applied):** the enum above is the *target*. The live DB still carries the pre-refactor enum (`identified, new, prospect, qualified, proposal, lead, client, churned`) and the legacy `contact_status` mirror. Step 5 remaps `new + prospect → new_prospect`, `qualified + proposal + lead → lead`, `churned → relationship_ended`, adds `dropped`, then (Bob cut over first) drops `contact_status` and its sync trigger. Hard enum cutover — Bob's skill must be updated to the new values before it runs.
-
 ## Task Statuses
 
 `todo → in_progress → review → done` (plus `blocked`). Bob finishes work into **review**; the owner reviews and closes to done.
@@ -67,9 +65,9 @@ All take an optional trailing `p_actor TEXT DEFAULT 'bob'` — the UI passes `'h
 Atomically: sets `lifecycle_stage = 'client'`, inserts a `wpa_contracts` row, logs a stage-change activity entry.
 
 **`move_to_stage(p_business_id, p_stage, p_actor)`**
-Moves a business to a lifecycle stage and logs a stage-change activity entry. (Until Step 5's `contact_status` drop, a sync trigger also mirrors the change into the legacy `contact_status` column.)
+Moves a business to a lifecycle stage and logs a stage-change activity entry.
 
-**`end_engagement(p_business_id, p_close_reason, p_actor)`** *(planned — Step 5)*
+**`end_engagement(p_business_id, p_close_reason, p_actor)`**
 Ends an active client engagement: sets `lifecycle_stage = 'relationship_ended'`, stamps `close_reason` + `closed_at` on the business's current `wpa_contracts` row, and logs a stage-change activity entry. The client-side mirror of `convert_to_client`.
 
 **`append_activity(p_business_id, p_type, p_summary, p_occurred_at, p_actor)`**

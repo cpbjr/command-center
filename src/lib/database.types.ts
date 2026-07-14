@@ -219,7 +219,6 @@ export type Database = {
           address: string
           business_status: string | null
           closed_date: string | null
-          contact_status: string
           contract_value: number | null
           created_at: string
           discovered_at: string
@@ -247,7 +246,6 @@ export type Database = {
           address?: string
           business_status?: string | null
           closed_date?: string | null
-          contact_status?: string
           contract_value?: number | null
           created_at?: string
           discovered_at?: string
@@ -275,7 +273,6 @@ export type Database = {
           address?: string
           business_status?: string | null
           closed_date?: string | null
-          contact_status?: string
           contract_value?: number | null
           created_at?: string
           discovered_at?: string
@@ -1243,7 +1240,6 @@ export type Database = {
           address: string | null
           business_status: string | null
           closed_date: string | null
-          contact_status: string | null
           contract_value: number | null
           created_at: string | null
           discovered_at: string | null
@@ -1295,10 +1291,6 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
-      }
-      contact_status_from_stage: {
-        Args: { p_stage: Database["wpa"]["Enums"]["lifecycle_stage"] }
-        Returns: string
       }
       convert_to_client: {
         Args: {
@@ -1367,7 +1359,6 @@ export type Database = {
           address: string
           business_status: string | null
           closed_date: string | null
-          contact_status: string
           contract_value: number | null
           created_at: string
           discovered_at: string
@@ -1398,22 +1389,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      stage_from_contact_status: {
-        Args: { p_status: string }
-        Returns: Database["wpa"]["Enums"]["lifecycle_stage"]
-      }
     }
     Enums: {
       lifecycle_stage:
+        | "identified"
+        | "new_prospect"
         | "lead"
         | "client"
-        | "churned"
-        | "identified"
-        | "new"
-        | "prospect"
-        | "qualified"
-        | "proposal"
         | "dropped"
+        | "relationship_ended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1542,15 +1526,12 @@ export const Constants = {
   wpa: {
     Enums: {
       lifecycle_stage: [
+        "identified",
+        "new_prospect",
         "lead",
         "client",
-        "churned",
-        "identified",
-        "new",
-        "prospect",
-        "qualified",
-        "proposal",
         "dropped",
+        "relationship_ended",
       ],
     },
   },

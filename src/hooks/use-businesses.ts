@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tansta
 import { supabase } from '@/lib/supabase'
 import { queryKeys, businessCacheRoots } from '@/lib/query-keys'
 import type { LifecycleStage } from '@/lib/lifecycle'
-import type { Database } from '@/lib/database.types'
 
 // Business rows are read under all of these keys (Leads page + Discovery page),
 // so every business mutation must invalidate the full set.
@@ -21,7 +20,6 @@ export interface Business {
   gbp_categories: string[]
   search_query: string
   discovered_at: string
-  contact_status: 'IDENTIFIED' | 'NEW' | 'TARGETED' | 'CONTACTED' | 'REPLIED' | 'CLOSED' | 'CLOSED-WON'  // legacy, removed in Task 5.10
   lifecycle_stage: LifecycleStage
   dropped_reason: 'declined' | 'not_a_fit' | 'no_response' | null
   discovery_rank: number | null
@@ -77,13 +75,7 @@ export function useBusinesses(options: UseBusinessesOptions) {
         .range(from, to)
 
       if (stageFilter.length > 0) {
-        // Cast: the DB enum still carries the pre-remap legacy values (gated
-        // Task 5.9) so the generated Supabase types don't yet include the
-        // final vocabulary here. The live enum already accepts these values.
-        query = query.in(
-          'lifecycle_stage',
-          stageFilter as unknown as Database['wpa']['Enums']['lifecycle_stage'][]
-        )
+        query = query.in('lifecycle_stage', stageFilter)
       }
 
       if (search.trim()) {
