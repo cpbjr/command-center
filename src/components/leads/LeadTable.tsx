@@ -21,6 +21,7 @@ import { type Business, useMoveToStage, useMarkDropped } from '@/hooks/use-busin
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon, GlobeIcon, PhoneIcon, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { LEAD_DROPDOWN_STAGES, STAGE_LABELS, type LifecycleStage } from '@/lib/lifecycle'
+import { formatPhone } from '@/lib/format'
 
 function extractCity(address: string): string {
   if (!address) return '—'
@@ -223,7 +224,7 @@ export function LeadTable({
                           className="inline-flex items-center gap-1 hover:text-foreground"
                         >
                           <PhoneIcon className="size-3" />
-                          {biz.phone}
+                          {formatPhone(biz.phone)}
                         </a>
                       ) : (
                         '—'

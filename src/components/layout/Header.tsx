@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from 
 import Sidebar from "./Sidebar"
 
 const routeTitles: Record<string, string> = {
+  "/discovery": "Discovery",
   "/": "Leads",
   "/clients": "Clients",
   "/tasks": "Tasks",

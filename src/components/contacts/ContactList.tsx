@@ -5,6 +5,7 @@ import { Phone, Mail, ChevronDown, ChevronUp, Star, Trash2, Pencil } from 'lucid
 import { useBusinessContacts, useDeleteContact, useUpdateContact, type Contact } from '@/hooks/use-contacts'
 import { ContactForm } from './ContactForm'
 import { ContactNotes } from './ContactNotes'
+import { formatPhone } from '@/lib/format'
 
 interface Props {
   businessId: string
@@ -37,7 +38,7 @@ function ContactRow({ contact }: { contact: Contact }) {
           <div className="flex gap-3 mt-0.5 text-xs text-muted-foreground">
             {contact.phone && (
               <a href={`tel:${contact.phone}`} className="flex items-center gap-1 hover:text-foreground" onClick={e => e.stopPropagation()}>
-                <Phone className="h-3 w-3" /> {contact.phone}
+                <Phone className="h-3 w-3" /> {formatPhone(contact.phone)}
               </a>
             )}
             {contact.email && (
@@ -97,8 +98,8 @@ export function ContactList({ businessId }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold">Contacts</span>
-        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowForm(v => !v)}>
+        <span className="section-eyebrow">Contacts</span>
+        <Button size="sm" variant="outline" className="h-11 md:h-7 text-xs" onClick={() => setShowForm(v => !v)}>
           + Add Contact
         </Button>
       </div>

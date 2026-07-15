@@ -34,7 +34,7 @@ export default function CostsPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-text-primary">AI Cost Tracker</h2>
+        <h2 className="font-serif text-2xl font-semibold text-text-primary">AI Cost Tracker</h2>
         <p className="mt-1 text-sm text-text-secondary">
           Daily spend across OpenAI, Anthropic, and Moonshot.
         </p>
@@ -55,7 +55,7 @@ export default function CostsPage() {
           <CostSummaryCards summary={summary} />
 
           <div className="rounded-xl border border-wpa-border bg-card p-5 shadow-sm">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-pine-deep">
+            <h3 className="section-eyebrow mb-4 text-pine-deep">
               30-Day Trend
             </h3>
             <CostChart costs={costs} />
@@ -63,7 +63,7 @@ export default function CostsPage() {
 
           <div className="rounded-xl border border-wpa-border bg-card shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-wpa-border">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-pine-deep">
+              <h3 className="section-eyebrow text-pine-deep">
                 Recent Breakdown
               </h3>
             </div>

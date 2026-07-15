@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { formatCurrency, formatDate } from '@/lib/format'
+import { formatCurrency, formatDate, formatPhone } from '@/lib/format'
 import { MapPinIcon, PhoneIcon, GlobeIcon, FileText } from 'lucide-react'
 import type { Contract, ServiceTier, ContractStatus } from '@/hooks/use-contracts'
 
@@ -86,9 +86,11 @@ export function ClientCard({ client, onClick, taskCount, documentCount }: Client
               </div>
             )}
             {client.wpa_businesses?.phone && (
-              <div className="flex items-center gap-1.5 text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-muted-foreground" onClick={(e) => e.stopPropagation()}>
                 <PhoneIcon className="h-3.5 w-3.5 shrink-0" />
-                <span className="text-xs">{client.wpa_businesses.phone}</span>
+                <a href={`tel:${client.wpa_businesses.phone}`} className="text-xs hover:text-pine-mid hover:underline">
+                  {formatPhone(client.wpa_businesses.phone)}
+                </a>
               </div>
             )}
             {client.wpa_businesses?.website_url && (
@@ -98,7 +100,7 @@ export function ClientCard({ client, onClick, taskCount, documentCount }: Client
                   href={client.wpa_businesses.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-600 hover:underline truncate"
+                  className="text-xs text-pine-mid hover:underline truncate"
                 >
                   {client.wpa_businesses.website_url.replace(/^https?:\/\//, '')}
                 </a>

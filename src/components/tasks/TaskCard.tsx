@@ -10,10 +10,10 @@ interface TaskCardProps {
 
 // ── Priority left-accent strip colors (WPA earth palette) ─────────────────
 const PRIORITY_ACCENT: Record<string, string> = {
-  urgent: 'bg-bark',     // #6B4E3D — serious without generic red
-  high:   'bg-ridge',    // #C17F4E — warm amber urgency
-  medium: 'bg-pine-mid', // #355E4C — brand default
-  low:    'bg-sand',     // #C4B5A3 — recedes visually
+  urgent: 'bg-bark',        // #6B4E3D — serious without generic red
+  high:   'bg-pine-forest', // #24453A — deeper pine, secondary to urgent
+  medium: 'bg-pine-mid',    // #355E4C — brand default
+  low:    'bg-sand',        // #C4B5A3 — recedes visually
 }
 
 // ── Priority → title typography weight ────────────────────────────────────

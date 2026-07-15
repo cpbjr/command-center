@@ -32,7 +32,7 @@ import { ContactList } from '@/components/contacts/ContactList'
 import { EntityTaskList } from '@/components/tasks/EntityTaskList'
 import { ActivityFeed } from '@/components/shared/ActivityFeed'
 import { DocumentList } from '@/components/clients/DocumentList'
-import { formatDate } from '@/lib/format'
+import { formatDate, formatPhone } from '@/lib/format'
 import {
   MapPinIcon,
   PhoneIcon,
@@ -54,6 +54,24 @@ interface LeadDetailProps {
   business: Business | null
   open: boolean
   onOpenChange: (open: boolean) => void
+}
+
+// "veterinary_care" → "Veterinary Care"
+function formatCategory(raw: string): string {
+  return raw
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+// "210-1 E 37th St, Garden City, ID 83714, USA" → "Garden City"
+function extractCity(address: string | null | undefined): string {
+  if (!address) return ''
+  const parts = address.split(',').map((p) => p.trim()).filter(Boolean)
+  // Drop a trailing country segment (e.g. "USA") and the "ST 12345" state/zip.
+  let end = parts.length - 1
+  if (end >= 0 && /^[A-Za-z.]+$/.test(parts[end])) end-- // country word
+  if (end >= 0 && /\d/.test(parts[end])) end-- // "ID 83714"
+  return end >= 0 ? parts[end] : ''
 }
 
 function BooleanFlag({ value, label }: { value: boolean | null; label: string }) {
@@ -159,36 +177,59 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
   return (
     <>
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg p-0">
-        <ScrollArea className="h-full">
-          <div className="p-6 space-y-4">
-            {business ? (
-              <>
-                <SheetHeader className="p-0">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <SheetTitle className="text-xl leading-tight">{business.name}</SheetTitle>
+      {/* Bottom drawer on mobile (thumb-reachable, full dynamic height); classic
+          right rail on sm+. p-0 so the sticky header can span edge-to-edge. */}
+      <SheetContent
+        side="bottom"
+        showCloseButton={false}
+        className="p-0 h-[92dvh] flex flex-col sm:inset-y-0 sm:right-0 sm:left-auto sm:h-full sm:max-h-none sm:w-full sm:max-w-lg sm:rounded-none sm:border-l"
+      >
+        {business ? (
+          <>
+            {/* Sticky drawer header — grip + serif name + meta rail, always visible */}
+            <SheetHeader className="shrink-0 gap-0 border-b border-border-light bg-parchment/95 backdrop-blur px-5 pb-3 pt-0">
+              <div className="drawer-grip sm:hidden" />
+              <div className="flex items-start gap-3 pt-2">
+                <div className="flex-1 min-w-0">
+                  <SheetTitle className="font-serif text-xl font-normal leading-tight text-pine-deep">
+                    {business.name}
+                  </SheetTitle>
+                  <SheetDescription asChild>
+                    <div className="meta-rail mt-1.5">
                       {Array.isArray(business.gbp_categories) && business.gbp_categories.length > 0 && (
-                        <SheetDescription className="mt-1">
-                          {business.gbp_categories[0]}
-                        </SheetDescription>
+                        <span>{formatCategory(business.gbp_categories[0])}</span>
                       )}
+                      {extractCity(business.address) && <span>{extractCity(business.address)}</span>}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <ScoreBadge score={business.latest_score} className="text-sm" />
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        onClick={() => setDeleteConfirmOpen(true)}
-                        title="Delete lead"
-                      >
-                        <Trash2Icon className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </SheetHeader>
+                  </SheetDescription>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <ScoreBadge score={business.latest_score} className="text-sm" />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="min-h-[44px] min-w-[44px] text-muted-foreground hover:text-destructive"
+                    onClick={() => setDeleteConfirmOpen(true)}
+                    title="Delete lead"
+                  >
+                    <Trash2Icon className="size-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="min-h-[44px] min-w-[44px] text-muted-foreground"
+                    onClick={() => onOpenChange(false)}
+                    title="Close"
+                  >
+                    <XCircleIcon className="size-5" />
+                  </Button>
+                </div>
+              </div>
+            </SheetHeader>
 
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="p-5 space-y-6">
+              <>
                 <Tabs defaultValue="details">
                   <TabsList className="w-full h-auto gap-0.5 p-1">
                     <TabsTrigger value="details" className="flex-1 text-xs">Details</TabsTrigger>
@@ -204,7 +245,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                         value={localStage ?? business.lifecycle_stage}
                         onValueChange={(v) => handleStageChange(v as LifecycleStage)}
                       >
-                        <SelectTrigger size="sm" className="h-7 w-[110px]">
+                        <SelectTrigger size="sm" className="h-11 md:h-7 w-[110px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -219,7 +260,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 text-xs"
+                          className="h-11 md:h-7 text-xs"
                           onClick={() => setConvertDialogOpen(true)}
                         >
                           Convert to Client
@@ -229,7 +270,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 text-xs"
+                          className="h-11 md:h-7 text-xs"
                           onClick={() => {
                             setCloseReason(CLOSE_REASONS[0].value)
                             setEndEngagementOpen(true)
@@ -240,22 +281,21 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                       )}
                     </div>
 
-                    {/* Notes */}
+                    {/* Standing notes — persistent context about the business,
+                        distinct from the timestamped Activity Log below. Auto-saves on blur. */}
                     <section className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Notes
-                        </h3>
+                        <h3 className="section-eyebrow">Standing Notes</h3>
                         {saveIndicator === 'saving' && (
-                          <span className="text-xs text-muted-foreground animate-pulse">Saving...</span>
+                          <span className="text-meta text-muted-foreground animate-pulse">Saving…</span>
                         )}
                         {saveIndicator === 'saved' && (
-                          <span className="text-xs text-green-600">Saved</span>
+                          <span className="text-meta text-needle">Saved</span>
                         )}
                       </div>
                       <textarea
-                        className="w-full min-h-[80px] resize-y rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                        placeholder="Add notes about this business..."
+                        className="w-full min-h-[88px] resize-y rounded-lg border border-input bg-card px-3 py-2.5 text-sm leading-relaxed placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                        placeholder="Pinned context — who to ask for, decision-maker, quirks. Time-stamped events go in the Activity Log below."
                         value={localNotes}
                         onChange={(e) => setLocalNotes(e.target.value)}
                         onBlur={handleNotesBlur}
@@ -264,7 +304,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
 
                     {/* Contact info */}
                     <section className="space-y-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <h3 className="section-eyebrow">
                         Contact
                       </h3>
                       <div className="space-y-2">
@@ -278,7 +318,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                           <div className="flex items-center gap-2 text-sm">
                             <PhoneIcon className="size-4 shrink-0 text-muted-foreground" />
                             <a href={`tel:${business.phone}`} className="hover:underline text-primary">
-                              {business.phone}
+                              {formatPhone(business.phone)}
                             </a>
                           </div>
                         )}
@@ -327,7 +367,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                     {/* GBP categories */}
                     {Array.isArray(business.gbp_categories) && business.gbp_categories.length > 0 && (
                       <section className="space-y-2">
-                        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <h3 className="section-eyebrow">
                           GBP Categories
                         </h3>
                         <div className="flex flex-wrap gap-1.5">
@@ -337,7 +377,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                               className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs text-secondary-foreground"
                             >
                               <TagIcon className="size-3" />
-                              {cat}
+                              {formatCategory(cat)}
                             </span>
                           ))}
                         </div>
@@ -347,7 +387,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                     {/* Audit */}
                     <section className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <h3 className="section-eyebrow">
                           Audit
                         </h3>
                         <AuditTriggerButton businessId={business.id} hasAudit={!!audit} />
@@ -388,7 +428,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
 
                     {/* Tasks */}
                     <section className="space-y-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <h3 className="section-eyebrow">
                         Tasks
                       </h3>
                       <EntityTaskList businessId={business.id} businessName={business.name} />
@@ -401,7 +441,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
 
                     {/* Discovery info */}
                     <section className="space-y-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <h3 className="section-eyebrow">
                         Discovery
                       </h3>
                       <div className="rounded-md border p-3 space-y-2 text-sm">
@@ -447,13 +487,14 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                   </TabsContent>
                 </Tabs>
               </>
-            ) : (
-              <div className="flex h-40 items-center justify-center text-muted-foreground text-sm">
-                Select a lead to view details
-              </div>
-            )}
           </div>
         </ScrollArea>
+          </>
+        ) : (
+          <div className="flex h-40 items-center justify-center text-muted-foreground text-sm">
+            Select a lead to view details
+          </div>
+        )}
       </SheetContent>
     </Sheet>
     <ConvertToClientDialog

@@ -41,7 +41,7 @@ function StatCard({ label, value, sub }: StatCardProps) {
   return (
     <Card className="border-wpa-border shadow-sm">
       <CardContent className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className="section-eyebrow">{label}</p>
         <p className="mt-1 text-2xl font-bold tabular-nums text-text-primary">{value}</p>
         {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}
       </CardContent>

@@ -22,7 +22,7 @@ function MetricCell({
 }) {
   return (
     <div className="space-y-0.5">
-      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+      <span className="text-meta">
         {label}
       </span>
       <p className={cn('text-sm font-semibold', color)}>{value}</p>

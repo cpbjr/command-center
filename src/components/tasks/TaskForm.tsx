@@ -229,11 +229,12 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg flex flex-col max-h-[92dvh] p-0 gap-0">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4 border-b border-border-light">
           <DialogTitle>{isEditing ? 'Edit Task' : 'New Task'}</DialogTitle>
         </DialogHeader>
 
+        <div className="overflow-y-auto flex-1 min-h-0 px-6 pt-4">
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid gap-1.5">
             <label className="text-sm font-medium">Title *</label>
@@ -347,7 +348,7 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
                   type="button"
                   onClick={() => set('assigned_to', value)}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-sm transition-colors',
+                    'flex items-center justify-center gap-1.5 px-3 min-h-[44px] md:min-h-0 md:py-1.5 text-sm rounded-sm transition-colors',
                     form.assigned_to === value
                       ? 'bg-pine-mid text-warmwhite font-medium'
                       : 'text-text-tertiary hover:text-text-secondary'
@@ -475,11 +476,16 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
               <Button type="button" variant="outline" size="sm" onClick={addTag}>Add</Button>
             </div>
             {form.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-x-1 gap-y-3">
                 {form.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="gap-1 pr-1">
+                  <Badge key={tag} variant="secondary" className="relative gap-1 pr-1 overflow-visible">
                     {tag}
-                    <button type="button" onClick={() => removeTag(tag)} className="rounded-full p-0.5 hover:bg-black/10">
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      aria-label={`Remove tag ${tag}`}
+                      className="relative flex items-center justify-center size-3 before:absolute before:inset-[-16px] before:content-[''] hover:bg-black/10 rounded-full"
+                    >
                       <XIcon className="size-3" />
                     </button>
                   </Badge>
@@ -515,7 +521,7 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
             )}
           </div>
 
-          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-between pt-2">
             <div>
               {isEditing && (
                 <Button
@@ -540,7 +546,7 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
         </form>
 
         {isEditing && (
-          <div className="grid gap-2 border-t border-wpa-border/40 pt-3">
+          <div className="grid gap-2 border-t border-wpa-border/40 pt-3 pb-4">
             <label className="text-sm font-medium">Activity</label>
             <div className="flex gap-2">
               <Input
@@ -585,6 +591,7 @@ export function TaskForm({ open, onOpenChange, task, defaultContractId, defaultB
             )}
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   )

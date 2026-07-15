@@ -175,7 +175,7 @@ function num(s: string): number | null {
 function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{title}</p>
+      <p className="section-eyebrow">{title}</p>
       {children}
     </div>
   )

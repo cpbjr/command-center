@@ -132,6 +132,29 @@
   color: var(--text-tertiary);
 }
 
+/* Wordmark lockup — promoted from Command Center (post-v1.0). The WPA
+   logotype: serif wordmark over a tracked mono tagline. Defaults to pine-deep
+   on light backgrounds; place `.wordmark--invert` on the lockup when set on a
+   dark pine field (e.g. the app's login screen). */
+.wpa-brand .wordmark {
+  font-family: var(--font-serif);
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--pine-deep);
+  line-height: 1;
+}
+
+.wpa-brand .wordmark-tagline {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+}
+
+.wpa-brand .wordmark--invert { color: var(--warmwhite); }
+.wpa-brand .wordmark--invert + .wordmark-tagline { color: var(--sand); }
+
 .wpa-brand .caption {
   font-size: var(--fs-caption);
   color: var(--text-tertiary);
@@ -143,6 +166,29 @@
   font-family: var(--font-mono);
   font-size: var(--fs-small);
   color: var(--pine-mid);
+}
+
+/* Meta-rail — promoted from Command Center (post-v1.0). A tracked monospace
+   "field rail" that strings operational metadata (category · city · date)
+   into one line, like a label on surveyor's equipment. Separator sits on the
+   trailing edge of each item so a wrapped item starts clean, not with an
+   orphan "·". */
+.wpa-brand .meta-rail {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+.wpa-brand .meta-rail > *:not(:last-child)::after {
+  content: "·";
+  margin-left: var(--space-xs);
+  color: var(--sand);
 }
 
 

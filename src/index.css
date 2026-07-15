@@ -40,7 +40,10 @@
 
   /* WPA Accent */
   --color-needle: var(--needle);
+  --color-needle-light: var(--needle-light);
   --color-ridge: var(--ridge);
+  --color-ridge-light: var(--ridge-light);
+  --color-bark-light: var(--bark-light);
 
   /* WPA Text */
   --color-text-primary: var(--text-primary);
@@ -104,6 +107,67 @@
     font-size: 0.875rem;
     font-weight: 700;
     letter-spacing: 0.02em;
+  }
+
+  /* Wordmark lockup — the WPA logotype: serif wordmark over a mono tagline.
+     Promoted to the canonical brand file (.agent/SOPs/wpa-brand.css) as
+     .wordmark; kept here as the app's bare-class equivalent. Colors are set by
+     the caller (login sets white-on-pine via text utilities). */
+  .wordmark {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .wordmark-tagline {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  /* Signature device: a single tracked monospace "field rail" that strings
+     operational metadata (category · city · date · rank) into one line, like a
+     label on surveyor's equipment. Extends the .text-meta idiom for inline use. */
+  .meta-rail {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  /* Separator sits on the trailing edge of each item (not the leading edge of
+     the next) so a wrapped item starts clean instead of with an orphan "·". */
+  .meta-rail > *:not(:last-child)::after {
+    content: "·";
+    margin-left: 0.5rem;
+    color: var(--sand);
+  }
+
+  /* Section eyebrow — replaces ad-hoc "text-xs uppercase tracking-wider" labels */
+  .section-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+  }
+
+  /* Mobile bottom-nav + drawer grip live outside the print-oriented brand
+     file; kept on-palette. safe-area padding clears the iOS home indicator. */
+  .bottom-nav-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .drawer-grip {
+    width: 2.25rem;
+    height: 0.3rem;
+    border-radius: 9999px;
+    background: var(--sand);
+    margin: 0.6rem auto 0.25rem;
   }
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

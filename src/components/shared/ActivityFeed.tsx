@@ -61,8 +61,8 @@ export function ActivityFeed({ businessId }: ActivityFeedProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold">Activity Log</span>
-        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowForm(v => !v)}>
+        <span className="section-eyebrow">Activity Log</span>
+        <Button size="sm" variant="outline" className="h-11 md:h-7 text-xs" onClick={() => setShowForm(v => !v)}>
           + Log Activity
         </Button>
       </div>
