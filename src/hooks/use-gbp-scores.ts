@@ -4,7 +4,7 @@ import { queryKeys } from '@/lib/query-keys'
 
 export interface GbpScore {
   id: number
-  client_id: number
+  contract_id: number
   score: number
   notes: string | null
   recorded_at: string
@@ -13,15 +13,15 @@ export interface GbpScore {
 
 export type GbpScoreInsert = Omit<GbpScore, 'id' | 'created_at'>
 
-export function useGbpScores(clientId: number | null) {
+export function useGbpScores(contractId: number | null) {
   return useQuery<GbpScore[]>({
-    queryKey: queryKeys.gbpScores.byClient(clientId),
-    enabled: !!clientId,
+    queryKey: queryKeys.gbpScores.byContract(contractId),
+    enabled: !!contractId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wpa_gbp_scores')
         .select('*')
-        .eq('client_id', clientId!)
+        .eq('contract_id', contractId!)
         .order('recorded_at', { ascending: false })
 
       if (error) throw error
@@ -45,7 +45,7 @@ export function useAddGbpScore() {
       return data as GbpScore
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.gbpScores.byClient(data.client_id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.gbpScores.byContract(data.contract_id) })
     },
   })
 }

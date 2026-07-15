@@ -215,7 +215,7 @@ export default function DiscoveryPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <StatusBadge status={biz.contact_status} />
+                      <StatusBadge stage={biz.lifecycle_stage} />
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       {biz.rating != null ? (

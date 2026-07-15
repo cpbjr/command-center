@@ -46,11 +46,11 @@ export function useDiscoveryStats() {
           ? scores.reduce((sum: number, s: number) => sum + s, 0) / scores.length
           : null
 
-      // Unreviewed count: IDENTIFIED = discovered by Bob, not yet promoted to pipeline
+      // Unreviewed count: identified = discovered by Bob, not yet promoted to pipeline
       const { count: newCount, error: e4 } = await supabase
         .from('wpa_businesses')
         .select('*', { count: 'exact', head: true })
-        .eq('contact_status', 'IDENTIFIED')
+        .eq('lifecycle_stage', 'identified')
       if (e4) throw e4
 
       return {

@@ -19,7 +19,7 @@ export type Database = {
           avg_rating: number | null
           calls: number | null
           citation_count: number | null
-          client_id: number
+          contract_id: number
           created_at: string | null
           direct_searches: number | null
           direction_requests: number | null
@@ -39,7 +39,7 @@ export type Database = {
           avg_rating?: number | null
           calls?: number | null
           citation_count?: number | null
-          client_id: number
+          contract_id: number
           created_at?: string | null
           direct_searches?: number | null
           direction_requests?: number | null
@@ -59,7 +59,7 @@ export type Database = {
           avg_rating?: number | null
           calls?: number | null
           citation_count?: number | null
-          client_id?: number
+          contract_id?: number
           created_at?: string | null
           direct_searches?: number | null
           direction_requests?: number | null
@@ -75,7 +75,15 @@ export type Database = {
           total_searches?: number | null
           website_clicks?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "gbp_analytics_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "wpa_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wpa_activity: {
         Row: {
@@ -211,11 +219,11 @@ export type Database = {
           address: string
           business_status: string | null
           closed_date: string | null
-          contact_status: string
           contract_value: number | null
           created_at: string
           discovered_at: string
           discovery_rank: number | null
+          dropped_reason: string | null
           folder_path: string | null
           gbp_categories: Json | null
           gbp_primary_type: string
@@ -238,11 +246,11 @@ export type Database = {
           address?: string
           business_status?: string | null
           closed_date?: string | null
-          contact_status?: string
           contract_value?: number | null
           created_at?: string
           discovered_at?: string
           discovery_rank?: number | null
+          dropped_reason?: string | null
           folder_path?: string | null
           gbp_categories?: Json | null
           gbp_primary_type?: string
@@ -265,11 +273,11 @@ export type Database = {
           address?: string
           business_status?: string | null
           closed_date?: string | null
-          contact_status?: string
           contract_value?: number | null
           created_at?: string
           discovered_at?: string
           discovery_rank?: number | null
+          dropped_reason?: string | null
           folder_path?: string | null
           gbp_categories?: Json | null
           gbp_primary_type?: string
@@ -292,7 +300,7 @@ export type Database = {
       }
       wpa_client_baselines: {
         Row: {
-          client_id: number
+          contract_id: number
           created_at: string
           discovery_query: string | null
           discovery_rank: number | null
@@ -314,7 +322,7 @@ export type Database = {
           snapshot_date: string
         }
         Insert: {
-          client_id: number
+          contract_id: number
           created_at?: string
           discovery_query?: string | null
           discovery_rank?: number | null
@@ -336,7 +344,7 @@ export type Database = {
           snapshot_date: string
         }
         Update: {
-          client_id?: number
+          contract_id?: number
           created_at?: string
           discovery_query?: string | null
           discovery_rank?: number | null
@@ -357,7 +365,15 @@ export type Database = {
           notes?: string | null
           snapshot_date?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wpa_client_baselines_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "wpa_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wpa_contact_notes: {
         Row: {
@@ -454,6 +470,8 @@ export type Database = {
       wpa_contracts: {
         Row: {
           business_id: string
+          close_reason: string | null
+          closed_at: string | null
           created_at: string
           current_phase: string
           end_date: string | null
@@ -469,6 +487,8 @@ export type Database = {
         }
         Insert: {
           business_id: string
+          close_reason?: string | null
+          closed_at?: string | null
           created_at?: string
           current_phase?: string
           end_date?: string | null
@@ -484,6 +504,8 @@ export type Database = {
         }
         Update: {
           business_id?: string
+          close_reason?: string | null
+          closed_at?: string | null
           created_at?: string
           current_phase?: string
           end_date?: string | null
@@ -616,7 +638,7 @@ export type Database = {
       }
       wpa_gbp_insights: {
         Row: {
-          client_id: number
+          contract_id: number
           created_at: string
           direction_requests: number | null
           id: number
@@ -632,7 +654,7 @@ export type Database = {
           week_ending: string
         }
         Insert: {
-          client_id: number
+          contract_id: number
           created_at?: string
           direction_requests?: number | null
           id?: number
@@ -648,7 +670,7 @@ export type Database = {
           week_ending: string
         }
         Update: {
-          client_id?: number
+          contract_id?: number
           created_at?: string
           direction_requests?: number | null
           id?: number
@@ -663,11 +685,19 @@ export type Database = {
           website_clicks?: number | null
           week_ending?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wpa_gbp_insights_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "wpa_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wpa_gbp_scores: {
         Row: {
-          client_id: number
+          contract_id: number
           created_at: string | null
           id: number
           notes: string | null
@@ -675,7 +705,7 @@ export type Database = {
           score: number | null
         }
         Insert: {
-          client_id: number
+          contract_id: number
           created_at?: string | null
           id?: number
           notes?: string | null
@@ -683,14 +713,22 @@ export type Database = {
           score?: number | null
         }
         Update: {
-          client_id?: number
+          contract_id?: number
           created_at?: string | null
           id?: number
           notes?: string | null
           recorded_at?: string | null
           score?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wpa_gbp_scores_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "wpa_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wpa_project_updates: {
         Row: {
@@ -992,7 +1030,7 @@ export type Database = {
         Row: {
           body: string
           client_email: string | null
-          client_id: number
+          contract_id: number
           created_at: string
           drafted_at: string
           id: number
@@ -1005,7 +1043,7 @@ export type Database = {
         Insert: {
           body: string
           client_email?: string | null
-          client_id: number
+          contract_id: number
           created_at?: string
           drafted_at?: string
           id?: number
@@ -1018,7 +1056,7 @@ export type Database = {
         Update: {
           body?: string
           client_email?: string | null
-          client_id?: number
+          contract_id?: number
           created_at?: string
           drafted_at?: string
           id?: number
@@ -1028,7 +1066,15 @@ export type Database = {
           subject?: string
           week_ending?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wpa_weekly_reports_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "wpa_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wpa_winnow_decisions: {
         Row: {
@@ -1193,15 +1239,20 @@ export type Database = {
         Row: {
           address: string | null
           business_status: string | null
-          contact_status: string | null
+          closed_date: string | null
+          contract_value: number | null
           created_at: string | null
           discovered_at: string | null
           discovery_rank: number | null
+          dropped_reason: string | null
           folder_path: string | null
           gbp_categories: Json | null
+          gbp_primary_type: string | null
           google_maps_uri: string | null
           id: string | null
           latest_score: number | null
+          lead_source: string | null
+          lifecycle_stage: Database["wpa"]["Enums"]["lifecycle_stage"] | null
           name: string | null
           notes: string | null
           phone: string | null
@@ -1241,10 +1292,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      contact_status_from_stage: {
-        Args: { p_stage: Database["wpa"]["Enums"]["lifecycle_stage"] }
-        Returns: string
-      }
       convert_to_client: {
         Args: {
           p_actor?: string
@@ -1254,6 +1301,38 @@ export type Database = {
         }
         Returns: {
           business_id: string
+          close_reason: string | null
+          closed_at: string | null
+          created_at: string
+          current_phase: string
+          end_date: string | null
+          folder_path: string | null
+          id: number
+          monthly_revenue: number
+          next_action: string
+          notes: string
+          service_tier: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wpa_contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      end_engagement: {
+        Args: {
+          p_actor?: string
+          p_business_id: string
+          p_close_reason: string
+        }
+        Returns: {
+          business_id: string
+          close_reason: string | null
+          closed_at: string | null
           created_at: string
           current_phase: string
           end_date: string | null
@@ -1280,11 +1359,11 @@ export type Database = {
           address: string
           business_status: string | null
           closed_date: string | null
-          contact_status: string
           contract_value: number | null
           created_at: string
           discovered_at: string
           discovery_rank: number | null
+          dropped_reason: string | null
           folder_path: string | null
           gbp_categories: Json | null
           gbp_primary_type: string
@@ -1310,21 +1389,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      stage_from_contact_status: {
-        Args: { p_status: string }
-        Returns: Database["wpa"]["Enums"]["lifecycle_stage"]
-      }
     }
     Enums: {
       lifecycle_stage:
+        | "identified"
+        | "new_prospect"
         | "lead"
         | "client"
-        | "churned"
-        | "identified"
-        | "new"
-        | "prospect"
-        | "qualified"
-        | "proposal"
+        | "dropped"
+        | "relationship_ended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1453,14 +1526,12 @@ export const Constants = {
   wpa: {
     Enums: {
       lifecycle_stage: [
+        "identified",
+        "new_prospect",
         "lead",
         "client",
-        "churned",
-        "identified",
-        "new",
-        "prospect",
-        "qualified",
-        "proposal",
+        "dropped",
+        "relationship_ended",
       ],
     },
   },

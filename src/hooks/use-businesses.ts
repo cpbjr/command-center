@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { queryKeys, businessCacheRoots } from '@/lib/query-keys'
+import type { LifecycleStage } from '@/lib/lifecycle'
 
 // Business rows are read under all of these keys (Leads page + Discovery page),
 // so every business mutation must invalidate the full set.
@@ -19,7 +20,8 @@ export interface Business {
   gbp_categories: string[]
   search_query: string
   discovered_at: string
-  contact_status: 'IDENTIFIED' | 'NEW' | 'TARGETED' | 'CONTACTED' | 'REPLIED' | 'CLOSED' | 'CLOSED-WON'
+  lifecycle_stage: LifecycleStage
+  dropped_reason: 'declined' | 'not_a_fit' | 'no_response' | null
   discovery_rank: number | null
   rank_total_candidates: number | null
   google_maps_uri: string
@@ -46,7 +48,7 @@ export interface BusinessAudit {
 export interface UseBusinessesOptions {
   page: number
   pageSize: number
-  statusFilter: string[]
+  stageFilter: LifecycleStage[]
   scoreRange: [number, number]
   search: string
   category: string
@@ -59,7 +61,7 @@ export interface BusinessesResult {
 }
 
 export function useBusinesses(options: UseBusinessesOptions) {
-  const { page, pageSize, statusFilter, scoreRange, search, category, noWebsite } = options
+  const { page, pageSize, stageFilter, scoreRange, search, category, noWebsite } = options
   const from = page * pageSize
   const to = from + pageSize - 1
 
@@ -72,8 +74,8 @@ export function useBusinesses(options: UseBusinessesOptions) {
         .order('latest_score', { ascending: false, nullsFirst: false })
         .range(from, to)
 
-      if (statusFilter.length > 0) {
-        query = query.in('contact_status', statusFilter)
+      if (stageFilter.length > 0) {
+        query = query.in('lifecycle_stage', stageFilter)
       }
 
       if (search.trim()) {
@@ -157,26 +159,47 @@ export function useBusinessAudit(businessId: string | null) {
   })
 }
 
-export function useUpdateBusinessStatus() {
+export function useMoveToStage() {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: async ({
-      id,
-      contact_status,
-    }: {
-      id: string
-      contact_status: Business['contact_status']
-    }) => {
-      const { error } = await supabase
-        .from('wpa_businesses')
-        .update({ contact_status })
-        .eq('id', id)
+    mutationFn: async ({ id, stage }: { id: string; stage: LifecycleStage }) => {
+      const { error } = await supabase.rpc('move_to_stage', {
+        p_business_id: id, p_stage: stage, p_actor: 'human',
+      })
+      if (error) throw error
+    },
+    onSuccess: () => invalidateBusinessCaches(queryClient),
+  })
+}
 
+export function useMarkDropped() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason: string | null }) => {
+      const { error: e1 } = await supabase.from('wpa_businesses')
+        .update({ dropped_reason: reason }).eq('id', id)
+      if (e1) throw e1
+      const { error: e2 } = await supabase.rpc('move_to_stage', {
+        p_business_id: id, p_stage: 'dropped', p_actor: 'human',
+      })
+      if (e2) throw e2
+    },
+    onSuccess: () => invalidateBusinessCaches(queryClient),
+  })
+}
+
+export function useEndEngagement() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ business_id, close_reason }: { business_id: string; close_reason: string }) => {
+      const { error } = await supabase.rpc('end_engagement', {
+        p_business_id: business_id, p_close_reason: close_reason, p_actor: 'human',
+      })
       if (error) throw error
     },
     onSuccess: () => {
       invalidateBusinessCaches(queryClient)
+      queryClient.invalidateQueries({ queryKey: queryKeys.contracts.all })
     },
   })
 }

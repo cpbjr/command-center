@@ -4,6 +4,7 @@ import { LeadTable } from '@/components/leads/LeadTable'
 import { LeadCard } from '@/components/leads/LeadCard'
 import { LeadDetail } from '@/components/leads/LeadDetail'
 import { useBusinesses, type Business } from '@/hooks/use-businesses'
+import type { LifecycleStage } from '@/lib/lifecycle'
 import { Loader2Icon } from 'lucide-react'
 
 const PAGE_SIZE = 50
@@ -11,7 +12,7 @@ const PAGE_SIZE = 50
 export default function LeadsPage() {
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string[]>(['NEW', 'TARGETED', 'CONTACTED', 'REPLIED'])
+  const [stageFilter, setStageFilter] = useState<LifecycleStage[]>(['identified', 'new_prospect', 'lead'])
   const [category, setCategory] = useState('')
   const [scoreRange, setScoreRange] = useState<[number, number]>([0, 5])
   const [noWebsite, setNoWebsite] = useState(false)
@@ -21,7 +22,7 @@ export default function LeadsPage() {
   const { data, isLoading, isFetching } = useBusinesses({
     page,
     pageSize: PAGE_SIZE,
-    statusFilter,
+    stageFilter,
     scoreRange,
     search,
     category,
@@ -42,8 +43,8 @@ export default function LeadsPage() {
     setPage(0)
   }
 
-  function handleStatusFilterChange(v: string[]) {
-    setStatusFilter(v)
+  function handleStageFilterChange(v: LifecycleStage[]) {
+    setStageFilter(v)
     setPage(0)
   }
 
@@ -85,8 +86,8 @@ export default function LeadsPage() {
       <LeadFilters
         search={search}
         onSearchChange={handleSearchChange}
-        statusFilter={statusFilter}
-        onStatusFilterChange={handleStatusFilterChange}
+        stageFilter={stageFilter}
+        onStageFilterChange={handleStageFilterChange}
         category={category}
         onCategoryChange={handleCategoryChange}
         scoreRange={scoreRange}

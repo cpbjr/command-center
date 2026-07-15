@@ -1,56 +1,17 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import type { Business } from '@/hooks/use-businesses'
+import { STAGE_LABELS, STAGE_BADGE_CLASSES, type LifecycleStage } from '@/lib/lifecycle'
 
 interface StatusBadgeProps {
-  // Accepts the strict lead statuses plus the loosely-typed values coming from
-  // the businesses view (string | null); unknown values fall back to "New".
-  status: Business['contact_status'] | string | null | undefined
+  stage: LifecycleStage | string | null | undefined
   className?: string
 }
 
-const statusConfig: Record<
-  Business['contact_status'],
-  { label: string; className: string }
-> = {
-  NEW: {
-    label: 'New',
-    className: 'bg-slate-100 text-slate-700 border-slate-200',
-  },
-  IDENTIFIED: {
-    label: 'Identified',
-    className: 'bg-violet-100 text-violet-700 border-violet-200',
-  },
-  TARGETED: {
-    label: 'Targeted',
-    className: 'bg-orange-100 text-orange-700 border-orange-200',
-  },
-  CONTACTED: {
-    label: 'Contacted',
-    className: 'bg-blue-100 text-blue-700 border-blue-200',
-  },
-  REPLIED: {
-    label: 'Replied',
-    className: 'bg-amber-100 text-amber-700 border-amber-200',
-  },
-  CLOSED: {
-    label: 'Closed',
-    className: 'bg-slate-200 text-slate-600 border-slate-300',
-  },
-  'CLOSED-WON': {
-    label: 'Closed-Won',
-    className: 'bg-green-100 text-green-700 border-green-200',
-  },
-}
-
-export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const config = (status != null && statusConfig[status as Business['contact_status']]) || statusConfig.NEW
+export function StatusBadge({ stage, className }: StatusBadgeProps) {
+  const key = (stage && stage in STAGE_LABELS ? stage : 'identified') as LifecycleStage
   return (
-    <Badge
-      variant="outline"
-      className={cn(config.className, className)}
-    >
-      {config.label}
+    <Badge variant="outline" className={cn(STAGE_BADGE_CLASSES[key], className)}>
+      {STAGE_LABELS[key]}
     </Badge>
   )
 }

@@ -12,8 +12,8 @@ interface EntityTaskListProps {
   businessName?: string
   /**
    * Contract to scope tasks to when there is no linked business. Clients pass
-   * their id here; clientId == contractId because those ids map 1:1 (that
-   * fragile assumption is tracked separately — do not "fix" it here).
+   * their contract id here (a client IS a wpa_contracts row, so client.id is the
+   * contract id — no 1:1 assumption remains now that GBP tables FK to contracts).
    */
   contractId?: number
 }

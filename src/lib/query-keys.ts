@@ -51,8 +51,8 @@ export const queryKeys = {
   },
 
   clientBaselines: {
-    byClient: (clientId: number | null) => ['client-baselines', clientId] as const,
-    latest: (clientId: number | null) => ['client-baselines', clientId, 'latest'] as const,
+    byContract: (contractId: number | null) => ['client-baselines', contractId] as const,
+    latest: (contractId: number | null) => ['client-baselines', contractId, 'latest'] as const,
   },
 
   contacts: {
@@ -75,21 +75,21 @@ export const queryKeys = {
   },
 
   gbpScores: {
-    byClient: (clientId: number | null) => ['gbp-scores', clientId] as const,
+    byContract: (contractId: number | null) => ['gbp-scores', contractId] as const,
   },
 
   gbpInsights: {
-    byClient: (clientId: number | null) => ['gbp-insights', clientId] as const,
+    byContract: (contractId: number | null) => ['gbp-insights', contractId] as const,
   },
 
   gbpAnalytics: {
     all: ['gbp-analytics'] as const,
-    forPeriod: (clientId: number | null, periodStart: string, periodEnd: string) =>
-      ['gbp-analytics', clientId, periodStart, periodEnd] as const,
-    prior: (clientId: number | null, periodStart: string) =>
-      ['gbp-analytics-prior', clientId, periodStart] as const,
-    byClient: (clientId: number) => ['gbp-analytics', clientId] as const,
-    priorByClient: (clientId: number) => ['gbp-analytics-prior', clientId] as const,
+    forPeriod: (contractId: number | null, periodStart: string, periodEnd: string) =>
+      ['gbp-analytics', contractId, periodStart, periodEnd] as const,
+    prior: (contractId: number | null, periodStart: string) =>
+      ['gbp-analytics-prior', contractId, periodStart] as const,
+    byContract: (contractId: number) => ['gbp-analytics', contractId] as const,
+    priorByContract: (contractId: number) => ['gbp-analytics-prior', contractId] as const,
   },
 
   costs: {

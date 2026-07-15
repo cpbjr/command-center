@@ -26,7 +26,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { StatusBadge } from './StatusBadge'
 import { ScoreBadge } from './ScoreBadge'
 import { ConvertToClientDialog } from './ConvertToClientDialog'
-import { type Business, useBusinessAudit, useUpdateBusinessStatus, useUpdateBusinessNotes, useUpdateBusinessFolderPath, useDeleteBusiness } from '@/hooks/use-businesses'
+import { type Business, useBusinessAudit, useMoveToStage, useMarkDropped, useEndEngagement, useUpdateBusinessNotes, useUpdateBusinessFolderPath, useDeleteBusiness } from '@/hooks/use-businesses'
 import { AuditTriggerButton } from './AuditTriggerButton'
 import { ContactList } from '@/components/contacts/ContactList'
 import { EntityTaskList } from '@/components/tasks/EntityTaskList'
@@ -48,6 +48,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { LEAD_DROPDOWN_STAGES, STAGE_LABELS, DROPPED_REASONS, CLOSE_REASONS, type LifecycleStage } from '@/lib/lifecycle'
 
 interface LeadDetailProps {
   business: Business | null
@@ -79,20 +80,26 @@ function BooleanFlag({ value, label }: { value: boolean | null; label: string })
 
 export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
   const { data: audit } = useBusinessAudit(business?.id ?? null)
-  const updateStatus = useUpdateBusinessStatus()
+  const moveToStage = useMoveToStage()
+  const markDropped = useMarkDropped()
+  const endEngagement = useEndEngagement()
   const updateNotes = useUpdateBusinessNotes()
   const updateFolderPath = useUpdateBusinessFolderPath()
   const deleteBusiness = useDeleteBusiness()
   const [convertDialogOpen, setConvertDialogOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [localStatus, setLocalStatus] = useState<Business['contact_status'] | null>(business?.contact_status ?? null)
+  const [droppedReasonOpen, setDroppedReasonOpen] = useState(false)
+  const [droppedReason, setDroppedReason] = useState<string | null>(null)
+  const [endEngagementOpen, setEndEngagementOpen] = useState(false)
+  const [closeReason, setCloseReason] = useState<string>(CLOSE_REASONS[0].value)
+  const [localStage, setLocalStage] = useState<LifecycleStage | null>(business?.lifecycle_stage ?? null)
   const [localNotes, setLocalNotes] = useState(business?.notes ?? '')
   const [localFolderPath, setLocalFolderPath] = useState(business?.folder_path ?? '')
   const [saveIndicator, setSaveIndicator] = useState<'idle' | 'saving' | 'saved'>('idle')
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    setLocalStatus(business?.contact_status ?? null)
+    setLocalStage(business?.lifecycle_stage ?? null)
     setLocalNotes(business?.notes ?? '')
     setLocalFolderPath(business?.folder_path ?? '')
     setSaveIndicator('idle')
@@ -125,14 +132,28 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
     updateFolderPath.mutate({ id: business.id, folder_path: trimmed || null })
   }, [business, localFolderPath, updateFolderPath])
 
-  function handleStatusChange(v: Business['contact_status']) {
+  function handleStageChange(v: LifecycleStage) {
     if (!business) return
-    if (v === 'CLOSED-WON') {
-      setConvertDialogOpen(true)
+    if (v === 'dropped') {
+      setDroppedReason(null)
+      setDroppedReasonOpen(true)
     } else {
-      setLocalStatus(v)
-      updateStatus.mutate({ id: business.id, contact_status: v })
+      setLocalStage(v)
+      moveToStage.mutate({ id: business.id, stage: v })
     }
+  }
+
+  function handleConfirmDropped() {
+    if (!business) return
+    setLocalStage('dropped')
+    markDropped.mutate({ id: business.id, reason: droppedReason })
+    setDroppedReasonOpen(false)
+  }
+
+  function handleConfirmEndEngagement() {
+    if (!business) return
+    endEngagement.mutate({ business_id: business.id, close_reason: closeReason })
+    setEndEngagementOpen(false)
   }
 
   return (
@@ -178,22 +199,45 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                     {/* Status */}
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-muted-foreground">Status:</span>
-                      <StatusBadge status={localStatus ?? business.contact_status} />
+                      <StatusBadge stage={localStage ?? business.lifecycle_stage} />
                       <Select
-                        value={localStatus ?? business.contact_status}
-                        onValueChange={(v) => handleStatusChange(v as Business['contact_status'])}
+                        value={localStage ?? business.lifecycle_stage}
+                        onValueChange={(v) => handleStageChange(v as LifecycleStage)}
                       >
                         <SelectTrigger size="sm" className="h-7 w-[110px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {(['NEW', 'IDENTIFIED', 'TARGETED', 'CONTACTED', 'REPLIED', 'CLOSED', 'CLOSED-WON'] as const).map((s) => (
+                          {LEAD_DROPDOWN_STAGES.map((s) => (
                             <SelectItem key={s} value={s}>
-                              {s === 'CLOSED-WON' ? 'Closed-Won' : s.charAt(0) + s.slice(1).toLowerCase()}
+                              {STAGE_LABELS[s]}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      {(localStage ?? business.lifecycle_stage) === 'lead' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => setConvertDialogOpen(true)}
+                        >
+                          Convert to Client
+                        </Button>
+                      )}
+                      {(localStage ?? business.lifecycle_stage) === 'client' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            setCloseReason(CLOSE_REASONS[0].value)
+                            setEndEngagementOpen(true)
+                          }}
+                        >
+                          End Engagement
+                        </Button>
+                      )}
                     </div>
 
                     {/* Notes */}
@@ -440,6 +484,62 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
             }}
           >
             {deleteBusiness.isPending ? 'Deleting…' : 'Delete'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    <Dialog open={droppedReasonOpen} onOpenChange={setDroppedReasonOpen}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Mark as Dropped</DialogTitle>
+          <DialogDescription>
+            Why is <strong>{business?.name}</strong> being dropped?
+          </DialogDescription>
+        </DialogHeader>
+        <Select value={droppedReason ?? undefined} onValueChange={setDroppedReason}>
+          <SelectTrigger size="sm" className="w-full">
+            <SelectValue placeholder="Select a reason (optional)" />
+          </SelectTrigger>
+          <SelectContent>
+            {DROPPED_REASONS.map((r) => (
+              <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setDroppedReasonOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDropped} disabled={markDropped.isPending}>
+            {markDropped.isPending ? 'Saving…' : 'Confirm'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    <Dialog open={endEngagementOpen} onOpenChange={setEndEngagementOpen}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>End Engagement</DialogTitle>
+          <DialogDescription>
+            End the client engagement with <strong>{business?.name}</strong>?
+          </DialogDescription>
+        </DialogHeader>
+        <Select value={closeReason} onValueChange={setCloseReason}>
+          <SelectTrigger size="sm" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {CLOSE_REASONS.map((r) => (
+              <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => setEndEngagementOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmEndEngagement} disabled={endEngagement.isPending}>
+            {endEngagement.isPending ? 'Saving…' : 'Confirm'}
           </Button>
         </DialogFooter>
       </DialogContent>

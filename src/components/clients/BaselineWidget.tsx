@@ -6,7 +6,7 @@ import {
 import { formatDate } from '@/lib/format'
 
 interface BaselineWidgetProps {
-  clientId: number
+  contractId: number
 }
 
 function MetricCell({
@@ -44,8 +44,8 @@ function TrendArrow({ current, previous }: { current: number; previous?: number 
   return <Minus className="h-3 w-3 text-muted-foreground inline ml-1" />
 }
 
-export function BaselineWidget({ clientId }: BaselineWidgetProps) {
-  const { data: baseline } = useLatestBaseline(clientId)
+export function BaselineWidget({ contractId }: BaselineWidgetProps) {
+  const { data: baseline } = useLatestBaseline(contractId)
 
   if (!baseline) {
     return (

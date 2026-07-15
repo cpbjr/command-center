@@ -31,7 +31,7 @@ export function LeadCard({ business, onClick }: LeadCardProps) {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <StatusBadge status={business.contact_status} className="shrink-0 scale-90 origin-top-left" />
+        <StatusBadge stage={business.lifecycle_stage} className="shrink-0 scale-90 origin-top-left" />
         {business.rating != null && (
           <span className={cn(
             'inline-flex items-center gap-1 text-xs text-muted-foreground',

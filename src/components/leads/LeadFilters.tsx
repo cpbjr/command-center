@@ -8,26 +8,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useBusinessCategories } from '@/hooks/use-businesses'
+import { LEAD_DROPDOWN_STAGES, STAGE_LABELS, type LifecycleStage } from '@/lib/lifecycle'
 import { XIcon, SearchIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const CONTACT_STATUSES = ['NEW', 'IDENTIFIED', 'TARGETED', 'CONTACTED', 'REPLIED', 'CLOSED', 'CLOSED-WON'] as const
-
-const STATUS_LABELS: Record<string, string> = {
-  NEW: 'New',
-  IDENTIFIED: 'Identified',
-  TARGETED: 'Targeted',
-  CONTACTED: 'Contacted',
-  REPLIED: 'Replied',
-  CLOSED: 'Closed',
-  'CLOSED-WON': 'Closed-Won',
-}
 
 interface LeadFiltersProps {
   search: string
   onSearchChange: (v: string) => void
-  statusFilter: string[]
-  onStatusFilterChange: (v: string[]) => void
+  stageFilter: LifecycleStage[]
+  onStageFilterChange: (v: LifecycleStage[]) => void
   category: string
   onCategoryChange: (v: string) => void
   scoreRange: [number, number]
@@ -39,8 +28,8 @@ interface LeadFiltersProps {
 export function LeadFilters({
   search,
   onSearchChange,
-  statusFilter,
-  onStatusFilterChange,
+  stageFilter,
+  onStageFilterChange,
   category,
   onCategoryChange,
   scoreRange,
@@ -54,7 +43,7 @@ export function LeadFilters({
 
   function clearAll() {
     onSearchChange('')
-    onStatusFilterChange([])
+    onStageFilterChange([])
     onCategoryChange('')
     onScoreRangeChange([0, 5])
     onNoWebsiteChange(false)
@@ -62,7 +51,7 @@ export function LeadFilters({
 
   const hasActiveFilters =
     search.trim() !== '' ||
-    statusFilter.length > 0 ||
+    stageFilter.length > 0 ||
     category !== '' ||
     scoreRange[0] !== 0 ||
     scoreRange[1] !== 5 ||
@@ -83,18 +72,18 @@ export function LeadFilters({
         </div>
 
         {/* Status */}
-        <Select 
-          value={statusFilter.length === 1 ? statusFilter[0] : '__all__'} 
-          onValueChange={(v) => onStatusFilterChange(v === '__all__' ? [] : [v])}
+        <Select
+          value={stageFilter.length === 1 ? stageFilter[0] : '__all__'}
+          onValueChange={(v) => onStageFilterChange(v === '__all__' ? [] : [v as LifecycleStage])}
         >
           <SelectTrigger className="w-full sm:w-[150px]">
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">All statuses</SelectItem>
-            {CONTACT_STATUSES.map((status) => (
-              <SelectItem key={status} value={status}>
-                {STATUS_LABELS[status]}
+            {LEAD_DROPDOWN_STAGES.map((stage) => (
+              <SelectItem key={stage} value={stage}>
+                {STAGE_LABELS[stage]}
               </SelectItem>
             ))}
           </SelectContent>
