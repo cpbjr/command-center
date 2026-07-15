@@ -63,10 +63,10 @@ function LoginPage() {
     // Pine field is the brand's front door. A parchment card holds the form.
     <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-b from-pine-deep to-pine-forest p-6">
       <div className="w-full max-w-sm">
-        {/* Wordmark */}
+        {/* Wordmark lockup — .wordmark/.wordmark-tagline promoted to wpa-brand.css */}
         <div className="mb-8 text-center">
-          <div className="font-serif text-4xl font-bold tracking-tight text-white">WPA</div>
-          <div className="text-meta mt-2 text-sand">Command Center · Field Operations</div>
+          <div className="wordmark text-4xl text-white">WPA</div>
+          <div className="wordmark-tagline mt-2 text-sand">Command Center · Field Operations</div>
         </div>
 
         <form

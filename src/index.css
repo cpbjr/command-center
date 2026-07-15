@@ -109,6 +109,22 @@
     letter-spacing: 0.02em;
   }
 
+  /* Wordmark lockup — the WPA logotype: serif wordmark over a mono tagline.
+     Promoted to the canonical brand file (.agent/SOPs/wpa-brand.css) as
+     .wordmark; kept here as the app's bare-class equivalent. Colors are set by
+     the caller (login sets white-on-pine via text utilities). */
+  .wordmark {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .wordmark-tagline {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
   /* Signature device: a single tracked monospace "field rail" that strings
      operational metadata (category · city · date · rank) into one line, like a
      label on surveyor's equipment. Extends the .text-meta idiom for inline use. */
