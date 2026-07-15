@@ -41,3 +41,27 @@
 ## Rollback
 
 Everything is reversible until step 9: point the secrets/env back at the old project and redeploy; Bob's config likewise. Keep the old project untouched during the soak.
+
+---
+
+## Work log — EXECUTED 2026-07-14
+
+Steps 1–8 done and verified. Step 9 deferred to the soak (~2026-07-21).
+
+- **New project** `cfwaefobqjouyglocuyh` (`aws-1-us-east-1`), old `klyzdnocgrvassppripi` (`aws-1-us-west-1`).
+- **DB access gotcha:** no IPv6 locally → direct `db.<ref>.supabase.co` unreachable; used the **session pooler** (`aws-1-<region>.pooler.supabase.com:5432`). Docker default bridge couldn't reach the pooler either → ran `pg_dump`/`psql` from the `postgres:17` image with **`--network host`** (local `pg_dump` was v16, servers are PG17).
+- **Step 2 (data):** `pg_dump --schema=wpa` schema-only + data-only (drop `--disable-triggers`; pooler user isn't superuser). Loaded schema then data (`--single-transaction`). **Verified: all 20 tables' row counts match old exactly** (businesses 1904, service_ranks 10269, audits 926, winnow_decisions 273, tasks 40, …); 5 functions, 2 views, 17 sequences with correct `setval`.
+- **Step 3:** exposed `wpa` in Data API; granted `USAGE`/`ALL` to `authenticated` + `service_role` (fresh schema had no anon/authenticated grants). Service-role REST verified (count 1904, `append_activity` RPC live).
+- **Step 4:** auth user `christopher@whitepineagency.com` created; public signups disabled.
+- **Step 5 (Bob):** `ssh wpauser@beefy`. Updated `/home/wpauser/.hermes/.env` (added `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`; repointed `SUPABASE_ANON_KEY`→**service-role** since the skill references that var; old anon key kept as `#OLD_…` for rollback) and SKILL.md Base URL → new project. Restarted `systemctl --user restart hermes-gateway`. Verified queue query + a real `append_activity` (then deleted the test row). **Backups:** `.env.bak-cutover-*`, `SKILL.md.bak-cutover-*` on beefy.
+  - **FOLLOW-UP (not migration-critical):** `wpa-pipeline/SKILL.md` still has stale stage vocabulary (`identified→new→prospect→qualified→proposal→client`) and is missing `end_engagement`/`dropped_reason`/`p_actor` and the `wpa_task_events` queue protocol from `.agent/System/bob-task-protocol.md`. Modernize separately.
+- **Step 6 (lockdown):** ran `supabase/new-project/lockdown_policies.sql`. Verified: **anon denied** (`permission denied for schema wpa`, HTTP 401), **RLS on 20/20 tables** with `authenticated_full_access`, `authenticated` reads+writes OK, service-role OK.
+- **Step 7 (dashboard):** set GitHub secrets via `gh` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`→new, `VITE_REQUIRE_AUTH=true`); added `VITE_REQUIRE_AUTH` passthrough in `deploy.yml`; merged `claude/supabase-wpa-cutover`→`main`; CI deploy green. **Verified prod bundle carries new ref, old ref gone, login UI compiled in, anon 401.** Local `.env` repointed (old values kept as comments; `.env.bak-precutover-*`).
+- **Step 8 (tooling):** MCP `white-pine-projects` URL → new pooler URL (verified `supabase:sql` → 1904); `CLAUDE.md` ref/URL/link updated. **Backup:** `mcp-servers/config.json.bak-cutover-*`.
+
+### Step 9 — decommission (DEFERRED, do ~2026-07-21 after soak)
+
+1. Confirm no regressions during the week (dashboard + Bob on new project).
+2. `DROP SCHEMA wpa CASCADE` on the **old** project `klyzdnocgrvassppripi` (leave other schemas: turfsheet/taskboard/etc.).
+3. **Rotate the old project's anon key** — it's permanently public in already-shipped bundles.
+4. Remove the `#OLD_…` rollback comments from beefy `.env` and local `.env`; delete `*.bak-cutover-*` / `*.bak-precutover-*`.

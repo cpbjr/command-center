@@ -19,10 +19,16 @@ When creating plans always save a copy to .agent/Tasks/Implementation/. When wor
 
 | Key | Value |
 |-----|-------|
-| Project ref | `klyzdnocgrvassppripi` |
-| URL | `https://klyzdnocgrvassppripi.supabase.co` |
+| Project ref | `cfwaefobqjouyglocuyh` |
+| URL | `https://cfwaefobqjouyglocuyh.supabase.co` |
 | Schema | `WPA` |
 | MCP project name | `white-pine-projects` |
+
+> **Dedicated WPA project** (cutover 2026-07-14). Locked down: anon revoked,
+> authenticated-only RLS. Dashboard requires login (`VITE_REQUIRE_AUTH=true`);
+> Bob uses the service-role key. Old shared project `klyzdnocgrvassppripi` still
+> holds a `wpa` copy during the ~1-week soak (dropped + old anon key rotated at
+> decommission).
 
 **Querying via MCP-as-code:**
 ```bash
@@ -32,7 +38,7 @@ npx tsx run.ts supabase:query '{"project":"white-pine-projects","table":"wpa_tas
 
 **Schema migrations** live in `supabase/migrations/`. Apply with:
 ```bash
-npx supabase@latest link --project-ref klyzdnocgrvassppripi
+npx supabase@latest link --project-ref cfwaefobqjouyglocuyh
 npx supabase@latest db push
 ```
 ## ALWAYS USE "WPA" SCHEMA, NEVER "PUBLIC".
