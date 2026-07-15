@@ -132,7 +132,7 @@ export function TaskBoard({ tasks, onAdd, onEdit }: TaskBoardProps) {
       {/* Mobile FAB */}
       <button
         onClick={onAdd}
-        className="sm:hidden fixed bottom-6 right-6 z-10 flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-transform"
+        className="sm:hidden fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-5 z-30 flex items-center justify-center w-14 h-14 rounded-full bg-ridge text-white shadow-lg hover:bg-ridge/90 active:scale-95 transition-transform"
         aria-label="Add task"
       >
         <PlusIcon className="size-6" />

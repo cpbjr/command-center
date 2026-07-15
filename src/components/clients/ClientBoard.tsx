@@ -56,7 +56,7 @@ export function ClientBoard() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-semibold text-text-primary">Clients</h2>
+          <h2 className="font-serif text-2xl font-semibold text-text-primary">Clients</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
             {filteredClients?.length ?? 0} {statusFilter === 'all' ? 'total' : statusConfig[statusFilter].label.toLowerCase()} client{filteredClients?.length !== 1 ? 's' : ''}
           </p>
