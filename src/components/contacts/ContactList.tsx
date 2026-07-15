@@ -98,8 +98,8 @@ export function ContactList({ businessId }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold">Contacts</span>
-        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowForm(v => !v)}>
+        <span className="section-eyebrow">Contacts</span>
+        <Button size="sm" variant="outline" className="h-11 md:h-7 text-xs" onClick={() => setShowForm(v => !v)}>
           + Add Contact
         </Button>
       </div>

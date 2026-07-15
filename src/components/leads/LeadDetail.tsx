@@ -208,7 +208,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="min-h-[40px] min-w-[40px] text-muted-foreground hover:text-destructive"
+                    className="min-h-[44px] min-w-[44px] text-muted-foreground hover:text-destructive"
                     onClick={() => setDeleteConfirmOpen(true)}
                     title="Delete lead"
                   >
@@ -217,7 +217,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="min-h-[40px] min-w-[40px] text-muted-foreground"
+                    className="min-h-[44px] min-w-[44px] text-muted-foreground"
                     onClick={() => onOpenChange(false)}
                     title="Close"
                   >
@@ -245,7 +245,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                         value={localStage ?? business.lifecycle_stage}
                         onValueChange={(v) => handleStageChange(v as LifecycleStage)}
                       >
-                        <SelectTrigger size="sm" className="h-7 w-[110px]">
+                        <SelectTrigger size="sm" className="h-11 md:h-7 w-[110px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -260,7 +260,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 text-xs"
+                          className="h-11 md:h-7 text-xs"
                           onClick={() => setConvertDialogOpen(true)}
                         >
                           Convert to Client
@@ -270,7 +270,7 @@ export function LeadDetail({ business, open, onOpenChange }: LeadDetailProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 text-xs"
+                          className="h-11 md:h-7 text-xs"
                           onClick={() => {
                             setCloseReason(CLOSE_REASONS[0].value)
                             setEndEngagementOpen(true)

@@ -72,7 +72,7 @@ export function TaskBoard({ tasks, onAdd, onEdit }: TaskBoardProps) {
                 key={value}
                 onClick={() => setAssigneeFilter(value)}
                 className={cn(
-                  'px-2.5 py-1 text-xs rounded-sm transition-colors',
+                  'px-2.5 min-h-[44px] md:min-h-0 md:py-1 flex items-center text-xs rounded-sm transition-colors',
                   assigneeFilter === value
                     ? 'bg-pine-mid text-warmwhite font-medium'
                     : 'text-text-tertiary hover:text-text-secondary'
@@ -108,7 +108,7 @@ export function TaskBoard({ tasks, onAdd, onEdit }: TaskBoardProps) {
         <Tabs defaultValue="todo" className="w-full">
           <TabsList className="w-full flex overflow-x-auto scrollbar-hide h-auto justify-start p-1 touch-pan-x">
             {COLUMNS.map(({ status, label }) => (
-              <TabsTrigger key={status} value={status} className="text-xs px-2.5 py-1.5 whitespace-nowrap shrink-0">
+              <TabsTrigger key={status} value={status} className="text-xs px-2.5 min-h-[44px] md:min-h-0 md:py-1.5 whitespace-nowrap shrink-0">
                 {label}
                 <span className="ml-1 opacity-60 text-[10px]">
                   ({tasksForStatus(status).length})

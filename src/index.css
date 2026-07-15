@@ -123,9 +123,11 @@
     gap: 0.5rem;
     flex-wrap: wrap;
   }
-  .meta-rail > * + *::before {
+  /* Separator sits on the trailing edge of each item (not the leading edge of
+     the next) so a wrapped item starts clean instead of with an orphan "·". */
+  .meta-rail > *:not(:last-child)::after {
     content: "·";
-    margin-right: 0.5rem;
+    margin-left: 0.5rem;
     color: var(--sand);
   }
 
