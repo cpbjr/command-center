@@ -6,7 +6,7 @@
 
 > Branch `feature/crm-mcp-read`. Plan: `.agent/Tasks/Implementation/2026-10-25-crm-mcp-read-plan.md`
 
-- [x] Read-only package reviewed. Seven tools. No writes. The process does not start. Token table file is not applied.
+- [x] Live process reviewed. Branch `feature/crm-mcp-live`. Process starts uvicorn. Token table file is not applied.
 
 **Last Updated (older)**: 2026-07-15 (follow-up: ConvertToClientDialog audited safe, VITE_REQUIRE_AUTH secret confirmed, ridge logged as potential-issue)
 

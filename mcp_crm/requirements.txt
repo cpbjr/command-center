@@ -1,2 +1,4 @@
 mcp==2.3.0
 pytest>=9.0.0
+supabase
+uvicorn

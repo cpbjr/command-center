@@ -6,6 +6,8 @@ from mcp.server.auth.settings import AuthSettings
 from mcp.server.mcpserver import MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import AnyHttpUrl
+from starlette.responses import JSONResponse
+from starlette.routing import Route
 
 from mcp_crm.tokens import hash_token
 
@@ -115,6 +117,10 @@ def build_server(store, reader, *, public_url: str) -> MCPServer:
     return server
 
 
+async def _health(_request):
+    return JSONResponse({"status": "ok"})
+
+
 class PathAliasMiddleware:
     """Accept the public /crm/mcp path and the in-process /mcp path."""
 
@@ -166,4 +172,5 @@ def build_app(
         host="0.0.0.0",
     )
     app.add_middleware(PathAliasMiddleware, aliases={PUBLIC_PATH: "/mcp"})
+    app.router.routes.insert(0, Route("/health", _health, methods=["GET"]))
     return app
