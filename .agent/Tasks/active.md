@@ -1,6 +1,14 @@
 # Active Tasks
 
-**Last Updated**: 2026-07-15 (follow-up: ConvertToClientDialog audited safe, VITE_REQUIRE_AUTH secret confirmed, ridge logged as potential-issue)
+**Last Updated**: 2026-10-25
+
+## CRM MCP read
+
+> Branch `feature/crm-mcp-read`. Plan: `.agent/Tasks/Implementation/2026-10-25-crm-mcp-read-plan.md`
+
+- [x] Read-only package reviewed. Seven tools. No writes. The process does not start. Token table file is not applied.
+
+**Last Updated (older)**: 2026-07-15 (follow-up: ConvertToClientDialog audited safe, VITE_REQUIRE_AUTH secret confirmed, ridge logged as potential-issue)
 
 ## Mobile Redesign — Cleanup & Focus Pass
 > *Branch `feature/mobile-improvements` · PR #10 open. Refinement on top of shipped work — tighten, don't add scope.*
