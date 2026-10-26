@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths-ignore:
       - '.github/**'
+      - 'mcp_crm/**'
+      - '.agent/**'
+      - 'supabase/**'
+      - 'tests/**'
   workflow_dispatch:
 
 jobs:
