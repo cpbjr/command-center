@@ -3,6 +3,8 @@ name: Deploy Command Center
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '.github/**'
   workflow_dispatch:
 
 jobs:
@@ -31,12 +33,12 @@ jobs:
           VITE_FILE_SERVER_API_KEY: ${{ secrets.VITE_FILE_SERVER_API_KEY }}
         run: npm run build
 
-      - name: Deploy to beefy via rsync
+      - name: Deploy to whitepine via rsync
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -avz --delete
           path: dist/
-          remote_path: /var/www/dashboard/
-          remote_host: ${{ secrets.DEPLOY_HOST }}
-          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_path: /home/deploy/websites/dashboard/
+          remote_host: 5.78.128.255
+          remote_user: deploy
           remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
