@@ -39,7 +39,7 @@ This repo is public because there wasn't much like it on GitHub. If you're runni
 
 ## Database
 
-Supabase project: `klyzdnocgrvassppripi`
+Supabase project: `cfwaefobqjouyglocuyh`. The old ref `klyzdnocgrvassppripi` is retired.
 
 Key tables (all in the `wpa` schema):
 - `wpa_tasks` — all tasks (status, priority, category, `assigned_to`, tags, notes)
@@ -48,6 +48,8 @@ Key tables (all in the `wpa` schema):
 - `wpa_businesses` — the account spine: every lead, client, and prospect (`lifecycle_stage` is the pipeline field)
 - `wpa_contracts` — signed client engagements (one row per engagement)
 - `wpa_contacts` — people at businesses
+- `phone` on businesses and contacts is `+1` and ten digits. The form saves that form. The list still shows `(208) 938-0025`. Empty stays empty.
+- `wpa.mcp_api_tokens` — hashed bearers for the CRM MCP. Do not store the raw token.
 - `wpa_activity` — unified per-business activity log (calls, emails, notes, stage changes) with `actor`
 - `wpa_documents` — internal docs
 
