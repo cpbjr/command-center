@@ -2,22 +2,22 @@
 
 ## Overview
 
-The Command Center is a static React app deployed to a Hetzner VPS via GitHub Actions CI on every push to `main`.
+The Command Center dashboard is a static React app. GitHub Actions builds it and rsyncs `dist/` on a push to `main`, unless every changed file is in `paths-ignore`. The CRM MCP is a separate container. That rsync does not start it.
 
 ## Target
 
-- **Server:** beefy (Hetzner VPS, 5.78.152.85)
-- **User:** `wpauser`
-- **Web root:** `/var/www/dashboard/`
+- **Server:** whitepine (`5.78.128.255`). Beefy is retired. Do not deploy there.
+- **Dashboard files:** `/home/deploy/websites/dashboard/`
 - **Live URL:** [dashboard.whitepineagency.com](https://dashboard.whitepineagency.com)
+- **CRM MCP:** `https://whitepine-tech.com/crm/mcp` on container `command-center-mcp`
 
 ## CI Workflow
 
 `.github/workflows/deploy.yml` (in this repo):
 
-1. On push to `main`
+1. On push to `main`, unless every changed file is in `paths-ignore`
 2. `npm ci && npm run build` — produces `dist/`
-3. `rsync -avz --delete dist/ wpauser@5.78.152.85:/var/www/dashboard/`
+3. rsync `dist/` to whitepine `/home/deploy/websites/dashboard/`
 
 SSH key is stored as a GitHub Actions secret (`BEEFY_SSH_KEY`).
 
@@ -26,14 +26,14 @@ SSH key is stored as a GitHub Actions secret (`BEEFY_SSH_KEY`).
 If CI is unavailable:
 ```bash
 npm run build
-rsync -avz --delete dist/ wpauser@5.78.152.85:/var/www/dashboard/
+rsync -avz --delete dist/ wpauser@5.78.128.255:/home/deploy/websites/dashboard/
 ```
 
 ## Environment Variables
 
 Required in `.env` (not committed):
 ```
-VITE_SUPABASE_URL=https://klyzdnocgrvassppripi.supabase.co
+VITE_SUPABASE_URL=https://cfwaefobqjouyglocuyh.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon_key>
 ```
 
