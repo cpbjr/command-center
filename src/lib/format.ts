@@ -1,3 +1,5 @@
+import { nationalDigits } from './phone'
+
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -21,7 +23,7 @@ export function formatScore(score: number): string {
 
 /**
  * Format a US phone number as (AAA) BBB-CCCC.
- * Accepts messy input (punctuation, +1 country code, trailing extension).
+ * Uses the same digit rule as toE164. A trailing extension is kept for display.
  * Returns the original string unchanged when it isn't a recognizable
  * 10-digit US number, so unusual entries are never mangled.
  */
@@ -32,10 +34,8 @@ export function formatPhone(phone: string | null | undefined): string {
   const extMatch = phone.match(/\s*(?:x|ext\.?|extension)\s*\d+\s*$/i)
   const ext = extMatch ? ` ${extMatch[0].trim()}` : ''
   const main = ext ? phone.slice(0, extMatch!.index).trim() : phone
+  const digits = nationalDigits(main)
 
-  let digits = main.replace(/\D/g, '')
-  if (digits.length === 11 && digits.startsWith('1')) digits = digits.slice(1)
-
-  if (digits.length !== 10) return phone // not a standard US number — leave as-is
+  if (!digits) return phone
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}${ext}`
 }

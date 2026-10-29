@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { formatPhone } from '@/lib/format'
+import { toE164 } from '@/lib/phone'
 import { useAddContact, useUpdateContact, type Contact } from '@/hooks/use-contacts'
 
 interface Props {
@@ -17,19 +19,26 @@ export function ContactForm({ businessId, contact, onDone }: Props) {
   const [name, setName] = useState(contact?.name ?? '')
   const [lastName, setLastName] = useState(contact?.last_name ?? '')
   const [role, setRole] = useState(contact?.role ?? '')
-  const [phone, setPhone] = useState(contact?.phone ?? '')
+  const [phone, setPhone] = useState(formatPhone(contact?.phone ?? ''))
+  const [phoneError, setPhoneError] = useState('')
   const [email, setEmail] = useState(contact?.email ?? '')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
+    const storedPhone = toE164(phone)
+    if (storedPhone === null) {
+      setPhoneError('Enter a 10-digit phone number')
+      return
+    }
+    setPhoneError('')
     if (isEditing) {
       await update.mutateAsync({
         id: contact.id,
         name: name.trim(),
         last_name: lastName.trim(),
         role: role.trim(),
-        phone: phone.trim(),
+        phone: storedPhone,
         email: email.trim(),
         business_id: contact.business_id,
       })
@@ -40,7 +49,7 @@ export function ContactForm({ businessId, contact, onDone }: Props) {
         name: name.trim(),
         last_name: lastName.trim(),
         role: role.trim(),
-        phone: phone.trim(),
+        phone: storedPhone,
         email: email.trim(),
         is_primary: false,
         notes: '',
@@ -68,7 +77,16 @@ export function ContactForm({ businessId, contact, onDone }: Props) {
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium">Phone</label>
-          <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="(208) 555-1234" className="h-8 text-sm" />
+          <Input
+            value={formatPhone(phone)}
+            onChange={e => {
+              setPhoneError('')
+              setPhone(e.target.value)
+            }}
+            placeholder="(208) 555-1234"
+            className="h-8 text-sm"
+          />
+          {phoneError ? <p className="text-xs text-destructive">{phoneError}</p> : null}
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium">Email</label>
