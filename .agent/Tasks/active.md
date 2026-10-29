@@ -1,12 +1,19 @@
 # Active Tasks
 
-**Last Updated**: 2026-10-25
+**Last Updated**: 2026-10-28
+
+## CRM MCP phone storage and writes
+
+> Approved. Plan: `.agent/Tasks/Implementation/2026-10-28-crm-mcp-phone-and-writes-plan.md`
+
+- [x] Christopher approved. Cody finished. Card `t_fa3ca5b9` is with Ricky. Tests re-run here: pytest 31 passed, npm test 11 passed. Not live. Migration not applied.
 
 ## CRM MCP read
 
 > Branch `feature/crm-mcp-read`. Plan: `.agent/Tasks/Implementation/2026-10-25-crm-mcp-read-plan.md`
 
 - [x] Live process reviewed. Branch `feature/crm-mcp-live`. Process starts uvicorn. Token table file is not applied.
+- [x] Drop dead selects. Branch `feature/crm-mcp-drop-dead-columns`. Plan: `.agent/Tasks/Implementation/2026-10-26-crm-mcp-drop-dead-columns-plan.md`
 
 **Last Updated (older)**: 2026-07-15 (follow-up: ConvertToClientDialog audited safe, VITE_REQUIRE_AUTH secret confirmed, ridge logged as potential-issue)
 
